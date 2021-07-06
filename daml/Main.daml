@@ -23,16 +23,24 @@ setup = script do
         admin
         investor = alice
 
-  aliceVote <- submit admin do
-    createCmd Vote
+  bonyCustodian <- submit admin do
+    createCmd Custodian
       with
         admin
-        investor = alice
-        issuer = apple
-        csd = dtcc
         custodian = bony
+
+  appleIssuer <- submit bony do
+    exerciseCmd bonyCustodian GrantIssuerRights
+      with
+        issuer = apple
+        description = "AAPL"
+
+  aliceVote <- submit apple do
+    exerciseCmd appleIssuer IssueVote
+      with
+        investor = alice
+        csd = dtcc
         auditor = fed
-        description = "APPL"
         quantity = 10
         issued = now
         proxy = None
@@ -42,6 +50,20 @@ setup = script do
       with
         admin
         proxy = bob
-  
+
+  bobAppleProxy <- submit apple do
+    exerciseCmd appleIssuer GrantProxyRights
+      with
+        proxy = bob
+
+  aliceToBobVoteTransfer <- submit alice do
+    exerciseCmd aliceVote Transfer
+      with
+        newProxy = Some bob
+
+  -- submit bob do
+  --   exerciseCmd bobAppleProxy AcceptVoteAsProxy
+  --     with
+  --       transferId = aliceToBobVoteTransfer
 
   return ()

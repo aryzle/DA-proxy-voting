@@ -1,0 +1,21 @@
+module Election where
+
+import Vote
+
+template Election 
+  -- some event in time, voters will cast ballots on, either yes or no
+  -- admin collects ballots, tallies, announces winner (public party?)
+
+template Ballot
+  -- give to Vote holders, quantity as same as Vote quantity
+  -- specific to an Election
+  -- admin issues these
+  -- private to investor, proxy, and admin
+
+template FilledOutBallot
+  -- holds the ballot up/down vote
+  -- replaced/archives Ballot
+
+template ElectionResult
+  -- captures the votes
+  -- destroys/archives ballots and election after counting
