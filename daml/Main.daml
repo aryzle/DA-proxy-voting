@@ -1,0 +1,47 @@
+module Main where
+
+import Vote
+import UserAdmin
+
+import Daml.Script
+
+setup : Script ()
+setup = script do
+  alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
+  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  admin <- allocatePartyWithHint "Broadridge" (PartyIdHint "Broadridge")
+  apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
+  dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
+  bony <- allocatePartyWithHint "BoNY" (PartyIdHint "BoNY")
+  fed <- allocatePartyWithHint "Fed" (PartyIdHint "Fed")
+
+  now <- getTime
+
+  aliceInvestor <- submit admin do
+    createCmd Investor
+      with
+        admin
+        investor = alice
+
+  aliceVote <- submit admin do
+    createCmd Vote
+      with
+        admin
+        investor = alice
+        issuer = apple
+        csd = dtcc
+        custodian = bony
+        auditor = fed
+        description = "APPL"
+        quantity = 10
+        issued = now
+        proxy = None
+  
+  bobProxy <- submit admin do
+    createCmd Proxy
+      with
+        admin
+        proxy = bob
+  
+
+  return ()

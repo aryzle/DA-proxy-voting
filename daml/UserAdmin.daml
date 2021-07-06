@@ -1,0 +1,95 @@
+module UserAdmin where
+
+import Vote
+
+template Investor
+  with
+    admin: Party
+    investor: Party
+  where
+    signatory admin
+
+    controller admin can
+      RevokeInvestor: ()
+        do return ()
+
+
+template Proxy
+  with
+    admin: Party
+    proxy: Party
+  where
+    signatory admin
+
+    controller admin can
+      RevokeProxyRights: ()
+        do return ()
+
+
+template IssuerApprovedProxy
+  with
+    proxy: Party
+    admin: Party
+    issuer: Party
+    custodian: Party
+  where
+    signatory admin, issuer, custodian
+
+    controller proxy can
+      nonconsuming AcceptVoteAsProxy: ContractId Vote
+        with
+          transferId: ContractId VoteTransfer
+        do
+          exercise transferId AcceptTransfer
+
+
+template Custodian
+  with
+    admin: Party
+    custodian: Party
+  where
+    signatory admin
+
+    controller custodian can
+      nonconsuming GrantIssuerRights: ContractId Issuer
+        with
+          issuer: Party
+          description: Text
+        do
+          create Issuer with ..
+
+    controller admin can
+      RevokeCutodianRights: ()
+        do return ()
+
+
+template Issuer
+  with
+    issuer: Party
+    custodian: Party
+    admin: Party
+    description: Text -- stock symbol?
+  where
+    signatory admin, custodian
+
+    controller issuer can
+      nonconsuming IssueVote: ContractId Vote
+        with
+          investor: Party
+          csd: Party
+          auditor: Party
+          quantity: Int
+          issued: Time
+          proxy: Optional Party
+        do
+          create Vote with ..
+      
+      nonconsuming GrantProxyRights: ContractId IssuerApprovedProxy
+        with
+          proxy: Party
+        do
+          create IssuerApprovedProxy with ..
+      
+    controller admin can
+      RevokeIssuerRights: ()
+        do return ()
