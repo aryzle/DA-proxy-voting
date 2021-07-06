@@ -56,14 +56,26 @@ setup = script do
       with
         proxy = bob
 
+  -- Alice transfers vote to proxy Bob
   aliceToBobVoteTransfer <- submit alice do
     exerciseCmd aliceVote Transfer
       with
         newProxy = Some bob
 
-  -- submit bob do
-  --   exerciseCmd bobAppleProxy AcceptVoteAsProxy
-  --     with
-  --       transferId = aliceToBobVoteTransfer
+  -- proxy Bob accepts Alice's vote
+  aliceBobVote <- submit bob do
+    exerciseCmd bobAppleProxy AcceptVoteAsProxy
+      with
+        transferId = aliceToBobVoteTransfer
+
+  -- Alice decides to remove proxy Bob
+  aliceRemoveProxyVote <- submit alice do
+    exerciseCmd aliceBobVote Transfer
+      with
+        newProxy = None
+
+  -- admin approves removing proxy Bob
+  submit admin do
+    exerciseCmd aliceRemoveProxyVote AcceptTransfer
 
   return ()

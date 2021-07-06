@@ -39,7 +39,7 @@ template VoteTransfer
     proxy: Optional Party -- can be optional
     newProxy: Optional Party -- can be optional
   where
-    signatory investor, admin
+    signatory investor, admin, issuer, custodian
 
     controller newProxy, admin can
       AcceptTransfer: ContractId Vote
