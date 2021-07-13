@@ -9,7 +9,7 @@ template Vote
     csd: Party -- DTCC
     custodian: Party -- BoNY
     auditor: Party -- the Fed
-    description: Text -- stock symbol?
+    symbol: Text -- stock symbol
     quantity: Int -- has to be whole number
     issued: Time
     proxy: Optional Party -- can be optional
@@ -17,13 +17,16 @@ template Vote
     signatory admin, issuer, custodian
     observer csd, auditor
 
+    key (issuer, investor): (Party, Party)
+    maintainer key._1
+
     controller investor can
       Transfer: ContractId VoteTransfer
         with
           newProxy: Optional Party  -- if none, taking back vote
-        
         do
           create VoteTransfer with ..
+
 
 template VoteTransfer
   with
@@ -33,7 +36,7 @@ template VoteTransfer
     csd: Party -- DTCC
     custodian: Party -- BoNY
     auditor: Party -- the Fed
-    description: Text -- stock symbol?
+    symbol: Text -- stock symbol
     quantity: Int -- has to be whole number
     issued: Time
     proxy: Optional Party -- can be optional

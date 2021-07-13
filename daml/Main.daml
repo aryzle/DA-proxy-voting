@@ -1,9 +1,11 @@
 module Main where
 
+import Election
 import Vote
 import UserAdmin
 
 import Daml.Script
+import DA.Date as Date
 
 setup : Script ()
 setup = script do
@@ -33,7 +35,7 @@ setup = script do
     exerciseCmd bonyCustodian GrantIssuerRights
       with
         issuer = apple
-        description = "AAPL"
+        symbol = "AAPL"
 
   aliceVote <- submit apple do
     exerciseCmd appleIssuer IssueVote
@@ -75,7 +77,23 @@ setup = script do
         newProxy = None
 
   -- admin approves removing proxy Bob
-  submit admin do
+  aliceVoteId <- submit admin do
     exerciseCmd aliceRemoveProxyVote AcceptTransfer
+  
+  -- create Election
+  election <- submit apple do
+    exerciseCmd appleIssuer CreateElection
+      with
+        date = Date.date 2021 Date.Jul 14
+        description = "vote on CEO"
+  
+  -- !! having trouble getting the vote !!
+  aliceVote <- submit alice do queryContractId aliceVoteId
+  aliceBallot <- submit apple do
+    exerciseCmd election IssueBallots
+      with
+        investor = alice
+        proxy = None
+        vote = aliceVote
 
   return ()

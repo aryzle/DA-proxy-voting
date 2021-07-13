@@ -2,20 +2,77 @@ module Election where
 
 import Vote
 
-template Election 
+
+template Election
   -- some event in time, voters will cast ballots on, either yes or no
   -- admin collects ballots, tallies, announces winner (public party?)
+  with
+    date: Date
+    admin: Party
+    issuer: Party
+    description: Text
+  where
+    signatory admin, issuer
+
+    controller issuer can
+      IssueBallots: ContractId Ballot
+        with
+          investor: Party
+          proxy: Optional Party
+          vote: Vote
+        do
+          (voteId, vote) <- fetchByKey @Vote (issuer, investor)
+          create Ballot
+            with
+              quantity = vote.quantity
+              election = this
+              ..
+
 
 template Ballot
   -- give to Vote holders, quantity as same as Vote quantity
   -- specific to an Election
   -- admin issues these
   -- private to investor, proxy, and admin
+  with
+    admin: Party
+    issuer: Party
+    investor: Party
+    proxy: Optional Party
+    quantity: Int
+    election: Election -- !! should this be ElectionId? !!
+  where
+    signatory admin, investor, proxy
+
+    controller investor can
+      FillBallot: ContractId FilledOutBallot
+        with
+          vote: Bool
+        do
+          create FilledOutBallot with ..
+
 
 template FilledOutBallot
   -- holds the ballot up/down vote
-  -- replaced/archives Ballot
+  -- replaces/archives Ballot
+  with
+    admin: Party
+    issuer: Party
+    investor: Party
+    proxy: Optional Party
+    quantity: Int
+    election: Election -- !! should this be ElectionId? !!
+  where
+    signatory admin, investor, proxy
+
 
 template ElectionResult
   -- captures the votes
   -- destroys/archives ballots and election after counting
+  with
+    admin: Party
+    issuer: Party
+    votesFor: Int
+    votesAgainst: Int
+  where
+    signatory admin, issuer
