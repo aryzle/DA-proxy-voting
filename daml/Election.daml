@@ -15,18 +15,22 @@ template Election
     signatory admin, issuer
 
     controller issuer can
-      IssueBallots: ContractId Ballot
+      nonconsuming IssueBallots: ContractId Ballot
         with
           investor: Party
           proxy: Optional Party
-          vote: Vote
         do
           (voteId, vote) <- fetchByKey @Vote (issuer, investor)
           create Ballot
             with
               quantity = vote.quantity
-              election = this
+              election = self
               ..
+    
+    -- controller admin can
+    --   CollectBallots: ContractId ElectionResult
+    --     do
+
 
 
 template Ballot
@@ -40,9 +44,9 @@ template Ballot
     investor: Party
     proxy: Optional Party
     quantity: Int
-    election: Election -- !! should this be ElectionId? !!
+    election: ContractId Election
   where
-    signatory admin, investor, proxy
+    signatory admin, issuer
 
     controller investor can
       FillBallot: ContractId FilledOutBallot
@@ -61,7 +65,8 @@ template FilledOutBallot
     investor: Party
     proxy: Optional Party
     quantity: Int
-    election: Election -- !! should this be ElectionId? !!
+    election: ContractId Election
+    vote: Bool
   where
     signatory admin, investor, proxy
 

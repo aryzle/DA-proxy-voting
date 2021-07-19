@@ -87,13 +87,16 @@ setup = script do
         date = Date.date 2021 Date.Jul 14
         description = "vote on CEO"
   
-  -- !! having trouble getting the vote !!
-  aliceVote <- submit alice do queryContractId aliceVoteId
+  -- create ballot for Alice
   aliceBallot <- submit apple do
     exerciseCmd election IssueBallots
       with
         investor = alice
         proxy = None
-        vote = aliceVote
+
+  aliceFilledBallot <- submit alice do
+    exerciseCmd aliceBallot FillBallot
+      with
+        vote = True
 
   return ()
