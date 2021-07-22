@@ -30,6 +30,8 @@ setup = script do
       with
         admin
         custodian = bony
+        csd = dtcc
+        auditor = fed
 
   appleIssuer <- submit bony do
     exerciseCmd bonyCustodian GrantIssuerRights
@@ -41,8 +43,6 @@ setup = script do
     exerciseCmd appleIssuer IssueVote
       with
         investor = alice
-        csd = dtcc
-        auditor = fed
         quantity = 10
         issued = now
         proxy = None

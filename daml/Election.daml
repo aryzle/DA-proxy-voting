@@ -11,8 +11,11 @@ template Election
     admin: Party
     issuer: Party
     description: Text
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
   where
     signatory admin, issuer
+    observer csd, auditor
 
     controller issuer can
       nonconsuming IssueBallots: ContractId Ballot
@@ -45,8 +48,11 @@ template Ballot
     proxy: Optional Party
     quantity: Int
     election: ContractId Election
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
   where
     signatory admin, issuer
+    observer csd, auditor
 
     controller investor can
       FillBallot: ContractId FilledOutBallot
@@ -63,12 +69,15 @@ template FilledOutBallot
     admin: Party
     issuer: Party
     investor: Party
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
     proxy: Optional Party
     quantity: Int
     election: ContractId Election
     vote: Bool
   where
     signatory admin, investor, proxy
+    observer csd, auditor
 
 
 template ElectionResult

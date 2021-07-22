@@ -43,6 +43,7 @@ template VoteTransfer
     newProxy: Optional Party -- can be optional
   where
     signatory investor, admin, issuer, custodian
+    observer csd, auditor
 
     controller newProxy, admin can
       AcceptTransfer: ContractId Vote

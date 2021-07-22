@@ -48,8 +48,11 @@ template Custodian
   with
     admin: Party
     custodian: Party
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
   where
     signatory admin
+    observer csd, auditor
 
     controller custodian can
       nonconsuming GrantIssuerRights: ContractId Issuer
@@ -70,15 +73,16 @@ template Issuer
     custodian: Party
     admin: Party
     symbol: Text
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
   where
     signatory admin, custodian
+    observer csd, auditor
 
     controller issuer can
       nonconsuming IssueVote: ContractId Vote
         with
           investor: Party
-          csd: Party
-          auditor: Party
           quantity: Int
           issued: Time
           proxy: Optional Party
