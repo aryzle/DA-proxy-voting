@@ -20,3 +20,4 @@ dependencies:
   - daml-script
 sandbox-options:
   - --wall-clock-time
+  - --ledgerid=proxy-voting

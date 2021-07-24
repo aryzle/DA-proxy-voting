@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { damlPartyKey, damlTokenKey } from "../config";
 import { useUserState, useUserDispatch } from "../context/UserContext";
-import Layout from "./Layout/Layout";
+import Layout from "./Layout";
 import ErrorComponent from "../pages/error/Error";
 import Login from "../pages/login/Login";
 
@@ -16,7 +16,7 @@ export default function App() {
         <Route
           exact
           path="/app"
-          render={() => <Redirect to="/app/report" />}
+          render={() => <Redirect to="/app/votes" />}
         />
         <PrivateRoute path="/app" component={Layout} />
         <PublicRoute path="/login" component={Login} />
@@ -47,7 +47,7 @@ export default function App() {
     })
 
     return (
-      <Redirect to="/app/report" />
+      <Redirect to="/app/votes" />
     )
   }
 

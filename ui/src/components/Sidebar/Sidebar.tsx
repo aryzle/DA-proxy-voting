@@ -23,7 +23,10 @@ const Sidebar = ({ location } : RouteComponentProps) => {
     <Drawer open variant="permanent" className={classes.drawer} classes={{ paper: classes.drawer }}>
       <div className={classes.toolbar} />
       <List style={{ width: "100%" }}>
-        <SidebarLink key={0} label="Report" path="/app/report" icon={(<ListIcon />)} location={location} />
+        <SidebarLink key={0} label="Votes" path="/app/votes" icon={(<ListIcon />)} location={location} />
+      </List>
+      <List style={{ width: "100%" }}>
+        <SidebarLink key={0} label="Elections" path="/app/elections" icon={(<ListIcon />)} location={location} />
       </List>
     </Drawer>
   );

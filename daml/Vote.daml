@@ -14,7 +14,7 @@ template Vote
     issued: Time
     proxy: Optional Party -- can be optional
   where
-    signatory admin, issuer, custodian
+    signatory admin, issuer, custodian, proxy
     observer csd, auditor
 
     key (issuer, investor): (Party, Party)

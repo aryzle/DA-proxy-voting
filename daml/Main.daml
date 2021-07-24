@@ -70,33 +70,33 @@ setup = script do
       with
         transferId = aliceToBobVoteTransfer
 
-  -- Alice decides to remove proxy Bob
-  aliceRemoveProxyVote <- submit alice do
-    exerciseCmd aliceBobVote Transfer
-      with
-        newProxy = None
+  -- -- Alice decides to remove proxy Bob
+  -- aliceRemoveProxyVote <- submit alice do
+  --   exerciseCmd aliceBobVote Transfer
+  --     with
+  --       newProxy = None
 
-  -- admin approves removing proxy Bob
-  aliceVoteId <- submit admin do
-    exerciseCmd aliceRemoveProxyVote AcceptTransfer
+  -- -- admin approves removing proxy Bob
+  -- aliceVoteId <- submit admin do
+  --   exerciseCmd aliceRemoveProxyVote AcceptTransfer
   
-  -- create Election
-  election <- submit apple do
-    exerciseCmd appleIssuer CreateElection
-      with
-        date = Date.date 2021 Date.Jul 14
-        description = "vote on CEO"
+  -- -- create Election
+  -- election <- submit apple do
+  --   exerciseCmd appleIssuer CreateElection
+  --     with
+  --       date = Date.date 2021 Date.Jul 14
+  --       description = "vote on CEO"
   
-  -- create ballot for Alice
-  aliceBallot <- submit apple do
-    exerciseCmd election IssueBallots
-      with
-        investor = alice
-        proxy = None
+  -- -- create ballot for Alice
+  -- aliceBallot <- submit apple do
+  --   exerciseCmd election IssueBallots
+  --     with
+  --       investor = alice
+  --       proxy = None
 
-  aliceFilledBallot <- submit alice do
-    exerciseCmd aliceBallot FillBallot
-      with
-        vote = True
+  -- aliceFilledBallot <- submit alice do
+  --   exerciseCmd aliceBallot FillBallot
+  --     with
+  --       vote = True
 
   return ()

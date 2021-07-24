@@ -23,6 +23,7 @@ const overrides = {
       fontSize: "1.142rem",
     },
   },
+  spacing: 8,
 };
 
 export default {

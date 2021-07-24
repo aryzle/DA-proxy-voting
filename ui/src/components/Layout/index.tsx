@@ -1,11 +1,11 @@
 import React from "react";
 import { Route, Switch, withRouter } from "react-router-dom";
 import DamlLedger from "@daml/react";
-import Header from "../Header/Header";
-import Sidebar from "../Sidebar/Sidebar";
-import Report from "../../pages/report/Report";
-import { useUserState } from "../../context/UserContext";
-import { wsBaseUrl, httpBaseUrl } from "../../config";
+import Header from "components/Header/Header";
+import Sidebar from "components/Sidebar/Sidebar";
+import Votes from "pages/votes";
+import { useUserState } from "context/UserContext";
+import { wsBaseUrl, httpBaseUrl } from "config";
 import useStyles from "./styles";
 
 const Layout = () => {
@@ -24,7 +24,7 @@ const Layout = () => {
               <div className={classes.content}>
                 <div className={classes.fakeToolbar} />
                 <Switch>
-                  <Route path="/app/report" component={Report} />
+                  <Route path="/app/votes" component={Votes} />
                 </Switch>
               </div>
             </>
