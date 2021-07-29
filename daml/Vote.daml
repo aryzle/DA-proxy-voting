@@ -1,6 +1,7 @@
 module Vote where
 
 
+-- TODO: on creation, add investor to voter registry
 template Vote
   with
     investor: Party
@@ -14,18 +15,24 @@ template Vote
     issued: Time
     proxy: Optional Party -- can be optional
   where
-    signatory admin, issuer, custodian, proxy
-    observer csd, auditor
+    signatory admin, issuer, custodian
+    observer csd, auditor, proxy
 
-    key (issuer, investor): (Party, Party)
+    key (issuer, symbol, investor): (Party, Text, Party)
     maintainer key._1
 
     controller investor can
       Transfer: ContractId VoteTransfer
         with
-          newProxy: Optional Party  -- if none, taking back vote
+          newProxy: Optional Party
         do
           create VoteTransfer with ..
+
+    controller investor can
+      RemoveProxy : ContractId Vote
+        do
+          create this with
+            proxy = None
 
 
 template VoteTransfer
@@ -42,7 +49,7 @@ template VoteTransfer
     proxy: Optional Party -- can be optional
     newProxy: Optional Party -- can be optional
   where
-    signatory investor, admin, issuer, custodian
+    signatory admin, investor, issuer, custodian
     observer csd, auditor
 
     controller newProxy, admin can
@@ -51,3 +58,13 @@ template VoteTransfer
           create Vote with
             proxy = newProxy
             ..
+
+    controller admin can
+      DenyTransfer : ContractId Vote
+        do
+          create Vote with ..
+
+    controller investor can
+      StopTransfer : ContractId Vote
+        do
+          create Vote with ..

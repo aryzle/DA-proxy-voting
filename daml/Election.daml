@@ -13,27 +13,30 @@ template Election
     description: Text
     csd: Party -- DTCC
     auditor: Party -- the Fed
+    -- TODO: update Election to store filled out ballots
+    -- TODO: include list of possible voters
   where
     signatory admin, issuer
     observer csd, auditor
+    -- TODO: add key
 
     controller issuer can
       nonconsuming IssueBallots: ContractId Ballot
         with
+          symbol: Text
           investor: Party
           proxy: Optional Party
         do
-          (voteId, vote) <- fetchByKey @Vote (issuer, investor)
+          (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
           create Ballot
             with
               quantity = vote.quantity
               election = self
               ..
-    
+
     -- controller admin can
     --   CollectBallots: ContractId ElectionResult
     --     do
-
 
 
 template Ballot
@@ -47,7 +50,7 @@ template Ballot
     investor: Party
     proxy: Optional Party
     quantity: Int
-    election: ContractId Election
+    election: ContractId Election -- TODO: switch to key
     csd: Party -- DTCC
     auditor: Party -- the Fed
   where
@@ -60,6 +63,7 @@ template Ballot
           vote: Bool
         do
           create FilledOutBallot with ..
+          -- add to Election
 
 
 template FilledOutBallot
@@ -78,6 +82,7 @@ template FilledOutBallot
   where
     signatory admin, investor, proxy
     observer csd, auditor
+    -- TODO add key
 
 
 template ElectionResult
@@ -89,4 +94,5 @@ template ElectionResult
     votesFor: Int
     votesAgainst: Int
   where
-    signatory admin, issuer
+    signatory admin, issuer -- list of investors can be signatory
+    -- add observers (at least investors/proxies)

@@ -27,6 +27,7 @@ template Proxy
         do return ()
 
 
+-- custodian approved?
 template IssuerApprovedProxy
   with
     proxy: Party

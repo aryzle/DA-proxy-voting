@@ -72,13 +72,7 @@ setup = script do
 
   -- -- Alice decides to remove proxy Bob
   -- aliceRemoveProxyVote <- submit alice do
-  --   exerciseCmd aliceBobVote Transfer
-  --     with
-  --       newProxy = None
-
-  -- -- admin approves removing proxy Bob
-  -- aliceVoteId <- submit admin do
-  --   exerciseCmd aliceRemoveProxyVote AcceptTransfer
+  --   exerciseCmd aliceBobVote RemoveProxy
   
   -- -- create Election
   -- election <- submit apple do
@@ -91,6 +85,7 @@ setup = script do
   -- aliceBallot <- submit apple do
   --   exerciseCmd election IssueBallots
   --     with
+  --       symbol = "AAPL"
   --       investor = alice
   --       proxy = None
 
