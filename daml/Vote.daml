@@ -1,7 +1,29 @@
 module Vote where
 
 
--- TODO: on creation, add investor to voter registry
+template VoterRegistry
+  with
+    investors: [Party]
+    admin: Party
+    issuer: Party
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
+  where
+    signatory admin, issuer
+    observer csd, auditor, investors
+
+    key issuer: Party
+    maintainer key
+
+    controller issuer can
+      AddInvestor: ContractId VoterRegistry
+        with
+          investor: Party
+        do
+          create this with
+            investors = investor :: investors
+
+
 template Vote
   with
     investor: Party

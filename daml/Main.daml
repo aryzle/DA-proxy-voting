@@ -11,11 +11,13 @@ setup : Script ()
 setup = script do
   alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
   bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  charlie <- allocatePartyWithHint "Charlie" (PartyIdHint "Charlie")
   admin <- allocatePartyWithHint "Broadridge" (PartyIdHint "Broadridge")
   apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
   dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
   bony <- allocatePartyWithHint "BoNY" (PartyIdHint "BoNY")
   fed <- allocatePartyWithHint "Fed" (PartyIdHint "Fed")
+  public <- allocatePartyWithHint "Public" (PartyIdHint "Public")
 
   now <- getTime
 
@@ -24,6 +26,12 @@ setup = script do
       with
         admin
         investor = alice
+
+  charlieInvestor <- submit admin do
+    createCmd Investor
+      with
+        admin
+        investor = charlie
 
   bonyCustodian <- submit admin do
     createCmd Custodian
@@ -39,11 +47,34 @@ setup = script do
         issuer = apple
         symbol = "AAPL"
 
+  appleVoterRegistryCid <- submit apple do
+    exerciseCmd appleIssuer CreateVoterRegistry
+      with
+        investors = []
+
+  appleVoterRegistryCid <- submit apple do
+    exerciseCmd appleVoterRegistryCid AddInvestor
+      with
+        investor = alice
+
+  appleVoterRegistryCid <- submit apple do
+    exerciseCmd appleVoterRegistryCid AddInvestor
+      with
+        investor = charlie
+
   aliceVote <- submit apple do
     exerciseCmd appleIssuer IssueVote
       with
         investor = alice
         quantity = 10
+        issued = now
+        proxy = None
+
+  charlieVote <- submit apple do
+    exerciseCmd appleIssuer IssueVote
+      with
+        investor = charlie
+        quantity = 5
         issued = now
         proxy = None
   
@@ -52,6 +83,7 @@ setup = script do
       with
         admin
         proxy = bob
+        public
 
   bobAppleProxy <- submit apple do
     exerciseCmd appleIssuer GrantProxyRights
@@ -70,24 +102,27 @@ setup = script do
       with
         transferId = aliceToBobVoteTransfer
 
-  -- -- Alice decides to remove proxy Bob
-  -- aliceRemoveProxyVote <- submit alice do
-  --   exerciseCmd aliceBobVote RemoveProxy
+  -- Alice decides to remove proxy Bob
+  aliceRemoveProxyVote <- submit alice do
+    exerciseCmd aliceBobVote RemoveProxy
+
+  -- create Election
+  appleVoterRegistry <- queryContractId apple appleVoterRegistryCid
+  election <- case appleVoterRegistry of
+    Some contract -> submit apple do
+      exerciseCmd appleIssuer CreateElection
+        with
+          date = Date.date 2021 Date.Jul 14
+          description = "vote on CEO"
+          investors = contract.investors
+    None -> abort "couldn't make election"
   
-  -- -- create Election
-  -- election <- submit apple do
-  --   exerciseCmd appleIssuer CreateElection
-  --     with
-  --       date = Date.date 2021 Date.Jul 14
-  --       description = "vote on CEO"
-  
-  -- -- create ballot for Alice
-  -- aliceBallot <- submit apple do
-  --   exerciseCmd election IssueBallots
-  --     with
-  --       symbol = "AAPL"
-  --       investor = alice
-  --       proxy = None
+  -- create ballot for Apple shareholders
+  aliceBallot <- submit apple do
+    exerciseCmd election IssueBallots
+      with
+        symbol = "AAPL"
+        proxy = None
 
   -- aliceFilledBallot <- submit alice do
   --   exerciseCmd aliceBallot FillBallot

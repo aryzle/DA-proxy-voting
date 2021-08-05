@@ -15,12 +15,15 @@ template Investor
         do return ()
 
 
+-- TODO: sign a contract that makes them public or send id
 template Proxy
   with
     admin: Party
     proxy: Party
+    public: Party
   where
     signatory admin
+    observer public
 
     controller admin can
       RevokeProxyRights: ()
@@ -81,6 +84,12 @@ template Issuer
     observer csd, auditor
 
     controller issuer can
+      nonconsuming CreateVoterRegistry: ContractId VoterRegistry
+        with
+          investors: [Party]
+        do
+          create VoterRegistry with ..
+
       nonconsuming IssueVote: ContractId Vote
         with
           investor: Party
@@ -100,6 +109,7 @@ template Issuer
         with
           date: Date
           description: Text
+          investors: [Party]
         do
           create Election with ..
 

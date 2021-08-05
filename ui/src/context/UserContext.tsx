@@ -44,6 +44,7 @@ function userReducer(state : UserState, action : LoginAction) : UserState {
   }
 }
 
+// TODO: login as public party
 const UserProvider : React.FC = ({ children }) => {
   const party = localStorage.getItem(damlPartyKey);
   const token = localStorage.getItem(damlTokenKey);

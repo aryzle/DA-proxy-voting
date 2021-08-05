@@ -13,26 +13,28 @@ template Election
     description: Text
     csd: Party -- DTCC
     auditor: Party -- the Fed
+    investors: [Party]
     -- TODO: update Election to store filled out ballots
-    -- TODO: include list of possible voters
   where
     signatory admin, issuer
-    observer csd, auditor
-    -- TODO: add key
+    observer csd, auditor, investors
+    key (issuer, date, description): (Party, Date, Text)
+    maintainer key._1
 
     controller issuer can
-      nonconsuming IssueBallots: ContractId Ballot
+      nonconsuming IssueBallots: [ContractId Ballot]
         with
           symbol: Text
-          investor: Party
           proxy: Optional Party
         do
-          (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
-          create Ballot
-            with
-              quantity = vote.quantity
-              election = self
-              ..
+          forA investors (\investor -> do
+            (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
+            create Ballot
+              with
+                quantity = vote.quantity
+                election = self
+                ..
+            )
 
     -- controller admin can
     --   CollectBallots: ContractId ElectionResult

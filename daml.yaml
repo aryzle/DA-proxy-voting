@@ -8,11 +8,13 @@ init-script: Main:setup
 parties:
   - Alice
   - Bob
+  - Charlie
   - Broadridge
   - Apple
   - DTCC
   - BoNY
   - Fed
+  - Public
 version: 0.0.1
 dependencies:
   - daml-prim

@@ -21,7 +21,6 @@ export default function Report() {
   const party = useParty();
   const ledger : Ledger = useLedger();
   const { contracts: elections, loading: electionLoading } = useStreamQueries(Election);
-  console.log("elections", elections)
   const { contracts: issuers, loading: issuerLoading } = useStreamQueries(Issuer);
   const issuerContract = issuers.filter(issuer => issuer.payload.issuer === party).pop()
   const isIssuer = !!issuerContract
