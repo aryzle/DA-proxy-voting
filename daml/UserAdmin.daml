@@ -107,11 +107,14 @@ template Issuer
       
       nonconsuming CreateElection: ContractId Election
         with
+          id: Text
           date: Date
           description: Text
           investors: [Party]
         do
-          create Election with ..
+          create Election with
+            votedInvestors = []
+            ..
 
     controller admin can
       RevokeIssuerRights: ()

@@ -1,6 +1,7 @@
 module Election where
 
 import Vote
+import DA.Action (foldlA)
 
 
 template Election
@@ -10,18 +11,20 @@ template Election
     date: Date
     admin: Party
     issuer: Party
+    id: Text
     description: Text
     csd: Party -- DTCC
     auditor: Party -- the Fed
     investors: [Party]
-    -- TODO: update Election to store filled out ballots
+    votedInvestors: [Party]
   where
     signatory admin, issuer
     observer csd, auditor, investors
-    key (issuer, date, description): (Party, Date, Text)
+    key (issuer, date, id): (Party, Date, Text)
     maintainer key._1
 
     controller issuer can
+      -- issue ballots 1:1 to votes per investor
       nonconsuming IssueBallots: [ContractId Ballot]
         with
           symbol: Text
@@ -32,13 +35,32 @@ template Election
             create Ballot
               with
                 quantity = vote.quantity
-                election = self
+                electionId = id
+                electionDate = date
                 ..
             )
 
-    -- controller admin can
-    --   CollectBallots: ContractId ElectionResult
-    --     do
+    choice AddFilledOutBallot: ContractId Election
+        with
+          investor: Party
+      controller investor, issuer, admin
+        do
+          assert $ investor `elem` investors
+          create this with
+            votedInvestors = investor :: votedInvestors
+
+    controller admin can
+      CollectBallots: ContractId ElectionResult
+        do
+          -- TODO: count absentee votes
+          (votesFor, votesAgainst) <- foldlA (\ (yeses, nos) investor -> do
+            (cid, filledOutBallot) <- fetchByKey @FilledOutBallot (investor, issuer, date, id)
+            -- archive cid -- can't archive without investor approval
+            if filledOutBallot.vote
+            then return (yeses + filledOutBallot.quantity, nos)
+            else return (yeses, nos + filledOutBallot.quantity)
+            ) (0,0) votedInvestors
+          create ElectionResult with ..
 
 
 template Ballot
@@ -52,20 +74,22 @@ template Ballot
     investor: Party
     proxy: Optional Party
     quantity: Int
-    election: ContractId Election -- TODO: switch to key
-    csd: Party -- DTCC
-    auditor: Party -- the Fed
+    electionId: Text
+    electionDate: Date
   where
     signatory admin, issuer
-    observer csd, auditor
+    key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
+    maintainer key._2
 
     controller investor can
       FillBallot: ContractId FilledOutBallot
         with
           vote: Bool
         do
-          create FilledOutBallot with ..
           -- add to Election
+          cid <- create FilledOutBallot with ..
+          exerciseByKey @Election (issuer, electionDate, electionId) AddFilledOutBallot with ..
+          return cid
 
 
 template FilledOutBallot
@@ -75,16 +99,15 @@ template FilledOutBallot
     admin: Party
     issuer: Party
     investor: Party
-    csd: Party -- DTCC
-    auditor: Party -- the Fed
     proxy: Optional Party
     quantity: Int
-    election: ContractId Election
+    electionId: Text
+    electionDate: Date
     vote: Bool
   where
-    signatory admin, investor, proxy
-    observer csd, auditor
-    -- TODO add key
+    signatory admin, issuer, investor, proxy
+    key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
+    maintainer key._2
 
 
 template ElectionResult

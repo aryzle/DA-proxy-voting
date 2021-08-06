@@ -107,26 +107,37 @@ setup = script do
     exerciseCmd aliceBobVote RemoveProxy
 
   -- create Election
+  let id = "123"
+  let date = Date.date 2021 Date.Jul 14
   appleVoterRegistry <- queryContractId apple appleVoterRegistryCid
   election <- case appleVoterRegistry of
     Some contract -> submit apple do
       exerciseCmd appleIssuer CreateElection
         with
-          date = Date.date 2021 Date.Jul 14
+          id
+          date
           description = "vote on CEO"
           investors = contract.investors
     None -> abort "couldn't make election"
   
   -- create ballot for Apple shareholders
-  aliceBallot <- submit apple do
+  ballots <- submit apple do
     exerciseCmd election IssueBallots
       with
         symbol = "AAPL"
         proxy = None
 
-  -- aliceFilledBallot <- submit alice do
-  --   exerciseCmd aliceBallot FillBallot
-  --     with
-  --       vote = True
+  aliceFilledBallot <- submit alice do
+    exerciseByKeyCmd @Ballot (alice, apple, date, id) FillBallot
+      with
+        vote = True
+
+  charlieFilledBallot <- submit charlie do
+    exerciseByKeyCmd @Ballot (charlie, apple, date, id) FillBallot
+      with
+        vote = False
+
+  submit admin do
+    exerciseByKeyCmd @Election (apple, date, id) CollectBallots
 
   return ()
