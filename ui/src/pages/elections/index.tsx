@@ -32,10 +32,10 @@ export default function Report() {
   const handleClose = () => {
     setOpen(false);
   };
-  const createElection = async (date: string, description: string) => {
+  const createElection = async (id: string, date: string, description: string) => {
     if (!issuerContract) return
 
-    const [choiceReturnValue, events] = await ledger.exercise(Issuer.CreateElection, issuerContract.contractId, {date, description})
+    const [choiceReturnValue, events] = await ledger.exercise(Issuer.CreateElection, issuerContract.contractId, {id, date, description})
     console.log(choiceReturnValue)
     console.log(events)
     handleClose()

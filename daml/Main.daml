@@ -131,16 +131,12 @@ setup = script do
   -- create Election
   let id = "123"
   let date = Date.date 2021 Date.Jul 14
-  appleVoterRegistry <- queryContractId apple appleVoterRegistryCid
-  election <- case appleVoterRegistry of
-    Some contract -> submit apple do
-      exerciseCmd appleIssuer CreateElection
-        with
-          id
-          date
-          description = "vote on CEO"
-          investors = contract.investors
-    None -> abort "couldn't make election"
+  election <- submit apple do
+    exerciseCmd appleIssuer CreateElection
+      with
+        id
+        date
+        description = "vote on CEO"
   
   -- create ballot for Apple shareholders
   ballots <- submit apple do

@@ -1190,6 +1190,11 @@
   dependencies:
     "@mojotech/json-type-validation" "^3.1.0"
 
+"@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657@file:daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657":
+  version "1.13.1"
+  dependencies:
+    "@mojotech/json-type-validation" "^3.1.0"
+
 "@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662@file:daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662":
   version "1.13.1"
   dependencies:
@@ -1198,8 +1203,9 @@
 "@daml.js/proxy-voting-0.0.1@file:daml.js/proxy-voting-0.0.1":
   version "1.13.1"
   dependencies:
-    "@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-c7b6022f-1b0f-4439-9fb2-02650298a964-1626991235760/node_modules/@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7"
-    "@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-c7b6022f-1b0f-4439-9fb2-02650298a964-1626991235760/node_modules/@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662"
+    "@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7"
+    "@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657"
+    "@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662"
     "@mojotech/json-type-validation" "^3.1.0"
 
 "@daml/ledger@1.13.1":

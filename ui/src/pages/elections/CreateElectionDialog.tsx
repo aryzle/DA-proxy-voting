@@ -28,10 +28,11 @@ export interface InputDialogProps<T extends {[key: string]: any }> {
   open : boolean
   title : string
   onClose : () => void
-  createElection : (date: string, description: string) => void
+  createElection : (id: string, date: string, description: string) => void
 }
 
 export function CreateElectionDialog<T extends { [key : string] : any }>(props : InputDialogProps<T>) {
+  const [id, setId] = useState("")
   const [date, setDate] = useState("")
   const [desc, setDesc] = useState("")
 
@@ -43,18 +44,17 @@ export function CreateElectionDialog<T extends { [key : string] : any }>(props :
           Create an election by setting its date and describing what is being voted on.
         </DialogContentText>
         <TextField
-          id="date"
-          label="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          autoFocus
+          margin="dense"
+          id="id"
+          label="id"
+          type="text"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+          fullWidth
           required
         />
         <TextField
-            autoFocus
             margin="dense"
             id="description"
             label="description"
@@ -64,12 +64,24 @@ export function CreateElectionDialog<T extends { [key : string] : any }>(props :
             fullWidth
             required
           />
+          <TextField
+            margin="normal"
+            id="date"
+            label="date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.onClose()} color="secondary">
           Cancel
         </Button>
-        <Button onClick={() => props.createElection(date, desc)} color="primary">
+        <Button onClick={() => props.createElection(id, date, desc)} color="primary">
           Create
         </Button>
       </DialogActions>

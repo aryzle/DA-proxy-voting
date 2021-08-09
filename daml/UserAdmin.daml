@@ -112,9 +112,10 @@ template Issuer
           id: Text
           date: Date
           description: Text
-          investors: Set Party
         do
+          (cid, registry) <- fetchByKey @VoterRegistry issuer
           create Election with
+            investors = registry.investors
             votedInvestors = empty
             ..
 
