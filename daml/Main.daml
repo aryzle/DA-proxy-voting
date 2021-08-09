@@ -1,17 +1,20 @@
 module Main where
 
+import Daml.Script
+import DA.Date as Date
+import DA.Set as Set
+
 import Election
 import Vote
 import UserAdmin
 
-import Daml.Script
-import DA.Date as Date
 
 setup : Script ()
 setup = script do
   alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
   bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
   charlie <- allocatePartyWithHint "Charlie" (PartyIdHint "Charlie")
+  dan <- allocatePartyWithHint "Dan" (PartyIdHint "Dan")
   admin <- allocatePartyWithHint "Broadridge" (PartyIdHint "Broadridge")
   apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
   dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
@@ -33,6 +36,12 @@ setup = script do
         admin
         investor = charlie
 
+  danInvestor <- submit admin do
+    createCmd Investor
+      with
+        admin
+        investor = dan
+
   bonyCustodian <- submit admin do
     createCmd Custodian
       with
@@ -50,7 +59,7 @@ setup = script do
   appleVoterRegistryCid <- submit apple do
     exerciseCmd appleIssuer CreateVoterRegistry
       with
-        investors = []
+        investors = empty
 
   appleVoterRegistryCid <- submit apple do
     exerciseCmd appleVoterRegistryCid AddInvestor
@@ -61,6 +70,11 @@ setup = script do
     exerciseCmd appleVoterRegistryCid AddInvestor
       with
         investor = charlie
+
+  appleVoterRegistryCid <- submit apple do
+    exerciseCmd appleVoterRegistryCid AddInvestor
+      with
+        investor = dan
 
   aliceVote <- submit apple do
     exerciseCmd appleIssuer IssueVote
@@ -74,6 +88,14 @@ setup = script do
     exerciseCmd appleIssuer IssueVote
       with
         investor = charlie
+        quantity = 5
+        issued = now
+        proxy = None
+
+  danVote <- submit apple do
+    exerciseCmd appleIssuer IssueVote
+      with
+        investor = dan
         quantity = 5
         issued = now
         proxy = None

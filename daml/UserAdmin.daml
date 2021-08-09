@@ -1,5 +1,7 @@
 module UserAdmin where
 
+import DA.Set as Set
+
 import Election
 import Vote
 
@@ -86,7 +88,7 @@ template Issuer
     controller issuer can
       nonconsuming CreateVoterRegistry: ContractId VoterRegistry
         with
-          investors: [Party]
+          investors: Set Party
         do
           create VoterRegistry with ..
 
@@ -110,10 +112,10 @@ template Issuer
           id: Text
           date: Date
           description: Text
-          investors: [Party]
+          investors: Set Party
         do
           create Election with
-            votedInvestors = []
+            votedInvestors = empty
             ..
 
     controller admin can

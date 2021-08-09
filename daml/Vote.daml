@@ -1,9 +1,11 @@
 module Vote where
 
+import DA.Set as Set
+
 
 template VoterRegistry
   with
-    investors: [Party]
+    investors: Set Party
     admin: Party
     issuer: Party
     csd: Party -- DTCC
@@ -21,7 +23,7 @@ template VoterRegistry
           investor: Party
         do
           create this with
-            investors = investor :: investors
+            investors = insert investor investors
 
 
 template Vote

@@ -1,7 +1,9 @@
 module Election where
 
-import Vote
 import DA.Action (foldlA)
+import DA.Set as Set
+
+import Vote
 
 
 template Election
@@ -15,8 +17,8 @@ template Election
     description: Text
     csd: Party -- DTCC
     auditor: Party -- the Fed
-    investors: [Party]
-    votedInvestors: [Party]
+    investors: Set Party
+    votedInvestors: Set Party
   where
     signatory admin, issuer
     observer csd, auditor, investors
@@ -30,7 +32,7 @@ template Election
           symbol: Text
           proxy: Optional Party
         do
-          forA investors (\investor -> do
+          forA (toList investors) (\investor -> do
             (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
             create Ballot
               with
@@ -45,21 +47,24 @@ template Election
           investor: Party
       controller investor, issuer, admin
         do
-          assert $ investor `elem` investors
+          assert $ member investor investors
           create this with
-            votedInvestors = investor :: votedInvestors
+            votedInvestors = insert investor votedInvestors
 
     controller admin can
       CollectBallots: ContractId ElectionResult
         do
-          -- TODO: count absentee votes
           (votesFor, votesAgainst) <- foldlA (\ (yeses, nos) investor -> do
             (cid, filledOutBallot) <- fetchByKey @FilledOutBallot (investor, issuer, date, id)
             -- archive cid -- can't archive without investor approval
             if filledOutBallot.vote
             then return (yeses + filledOutBallot.quantity, nos)
             else return (yeses, nos + filledOutBallot.quantity)
-            ) (0,0) votedInvestors
+            ) (0,0) (toList votedInvestors)
+          absentee <- foldlA (\ num investor -> do
+            (cid, ballot) <- fetchByKey @Ballot (investor, issuer, date, id)
+            return (num + ballot.quantity)
+            ) 0 (toList (difference investors votedInvestors))
           create ElectionResult with ..
 
 
@@ -116,8 +121,12 @@ template ElectionResult
   with
     admin: Party
     issuer: Party
+    id: Text
+    date: Date
+    description: Text
     votesFor: Int
     votesAgainst: Int
+    absentee: Int
   where
     signatory admin, issuer -- list of investors can be signatory
     -- add observers (at least investors/proxies)
