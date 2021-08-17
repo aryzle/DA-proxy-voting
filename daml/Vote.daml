@@ -3,6 +3,30 @@ module Vote where
 import DA.Set as Set
 
 
+template ProxyRegistry
+  with
+    proxies: Set Party
+    public: Party
+    admin: Party
+    issuer: Party
+    csd: Party -- DTCC
+    auditor: Party -- the Fed
+  where
+    signatory admin, issuer
+    observer csd, auditor, proxies, public
+
+    key issuer: Party
+    maintainer key
+
+    controller issuer can
+      AddProxy: ContractId ProxyRegistry
+        with
+          proxy: Party
+        do
+          create this with
+            proxies = insert proxy proxies
+
+
 template VoterRegistry
   with
     investors: Set Party

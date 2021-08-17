@@ -17,7 +17,6 @@ template Investor
         do return ()
 
 
--- TODO: sign a contract that makes them public or send id
 template Proxy
   with
     admin: Party
@@ -92,6 +91,13 @@ template Issuer
         do
           create VoterRegistry with ..
 
+      nonconsuming CreateProxyRegistry: ContractId ProxyRegistry
+        with
+          proxies: Set Party
+          public: Party
+        do
+          create ProxyRegistry with ..
+
       nonconsuming IssueVote: ContractId Vote
         with
           investor: Party
@@ -100,23 +106,27 @@ template Issuer
           proxy: Optional Party
         do
           create Vote with ..
-      
+
       nonconsuming GrantProxyRights: ContractId IssuerApprovedProxy
         with
           proxy: Party
         do
+          exerciseByKey @ProxyRegistry issuer AddProxy with ..
           create IssuerApprovedProxy with ..
-      
+
       nonconsuming CreateElection: ContractId Election
         with
           id: Text
           date: Date
           description: Text
         do
-          (cid, registry) <- fetchByKey @VoterRegistry issuer
+          (cid, voterRegistry) <- fetchByKey @VoterRegistry issuer
+          (cid, proxyRegistry) <- fetchByKey @ProxyRegistry issuer
           create Election with
-            investors = registry.investors
+            investors = voterRegistry.investors
+            proxies = proxyRegistry.proxies
             votedInvestors = empty
+            votedProxies = empty
             ..
 
     controller admin can

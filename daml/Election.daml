@@ -1,9 +1,14 @@
 module Election where
 
 import DA.Action (foldlA)
+import DA.Optional (whenSome, fromOptional)
 import DA.Set as Set
 
 import Vote
+
+
+-- unused
+-- data ProxyVoter = Investor with voter: Party | Proxy with voter: Party deriving (Eq, Show)
 
 
 template Election
@@ -19,9 +24,12 @@ template Election
     auditor: Party -- the Fed
     investors: Set Party
     votedInvestors: Set Party
+    -- TODO: add proxies
+    proxies: Set Party
+    votedProxies: Set Party
   where
     signatory admin, issuer
-    observer csd, auditor, investors
+    observer csd, auditor, investors, proxies
     key (issuer, date, id): (Party, Date, Text)
     maintainer key._1
 
@@ -30,7 +38,6 @@ template Election
       nonconsuming IssueBallots: [ContractId Ballot]
         with
           symbol: Text
-          proxy: Optional Party
         do
           forA (toList investors) (\investor -> do
             (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
@@ -39,17 +46,21 @@ template Election
                 quantity = vote.quantity
                 electionId = id
                 electionDate = date
+                proxy = vote.proxy
                 ..
             )
 
     choice AddFilledOutBallot: ContractId Election
         with
           investor: Party
-      controller investor, issuer, admin
+          proxy: Optional Party
+      controller issuer, admin, fromOptional investor proxy
         do
           assert $ member investor investors
+          whenSome proxy (\p -> assert $ member p proxies)
           create this with
             votedInvestors = insert investor votedInvestors
+            votedProxies = optional votedProxies (`insert` votedProxies) proxy
 
     controller admin can
       CollectBallots: ContractId ElectionResult
@@ -86,7 +97,7 @@ template Ballot
     key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
     maintainer key._2
 
-    controller investor can
+    controller fromOptional investor proxy can
       FillBallot: ContractId FilledOutBallot
         with
           vote: Bool
@@ -110,7 +121,8 @@ template FilledOutBallot
     electionDate: Date
     vote: Bool
   where
-    signatory admin, issuer, investor, proxy
+    signatory admin, issuer, fromOptional investor proxy
+    observer investor
     key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
     maintainer key._2
 
@@ -121,6 +133,8 @@ template ElectionResult
   with
     admin: Party
     issuer: Party
+    investors: Set Party
+    proxies: Set Party
     id: Text
     date: Date
     description: Text
@@ -128,5 +142,5 @@ template ElectionResult
     votesAgainst: Int
     absentee: Int
   where
-    signatory admin, issuer -- list of investors can be signatory
-    -- add observers (at least investors/proxies)
+    signatory admin, issuer -- TODO: list of investors can be signatory
+    observer investors, proxies -- TODO: add proxy

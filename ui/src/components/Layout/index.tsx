@@ -19,17 +19,15 @@ const Layout = () => {
     return (
       <DamlLedger party={user.party} token={user.token} httpBaseUrl={httpBaseUrl} wsBaseUrl={wsBaseUrl}>
         <div className={classes.root}>
-            <>
-              <Header />
-              <Sidebar />
-              <div className={classes.content}>
-                <div className={classes.fakeToolbar} />
-                <Switch>
-                  <Route path="/app/votes" component={Votes} />
-                  <Route path="/app/elections" component={Elections} />
-                </Switch>
-              </div>
-            </>
+          <Header />
+          <Sidebar />
+          <div className={classes.content}>
+            <div className={classes.fakeToolbar} />
+            <Switch>
+              <Route path="/app/votes" component={Votes} />
+              <Route path="/app/elections" component={Elections} />
+            </Switch>
+          </div>
         </div>
       </DamlLedger>
     );

@@ -15,8 +15,10 @@ setup = script do
   bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
   charlie <- allocatePartyWithHint "Charlie" (PartyIdHint "Charlie")
   dan <- allocatePartyWithHint "Dan" (PartyIdHint "Dan")
+  faith <- allocatePartyWithHint "Faith" (PartyIdHint "Faith")
   admin <- allocatePartyWithHint "Broadridge" (PartyIdHint "Broadridge")
   apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
+  microsoft <- allocatePartyWithHint "Microsoft" (PartyIdHint "Microsoft")
   dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
   bony <- allocatePartyWithHint "BoNY" (PartyIdHint "BoNY")
   fed <- allocatePartyWithHint "Fed" (PartyIdHint "Fed")
@@ -56,13 +58,35 @@ setup = script do
         issuer = apple
         symbol = "AAPL"
 
+  microsoftIssuer <- submit bony do
+    exerciseCmd bonyCustodian GrantIssuerRights
+      with
+        issuer = microsoft
+        symbol = "MSFT"
+
   appleVoterRegistryCid <- submit apple do
     exerciseCmd appleIssuer CreateVoterRegistry
       with
         investors = empty
 
+  appleProxyRegistryCid <- submit apple do
+    exerciseCmd appleIssuer CreateProxyRegistry
+      with
+        proxies = empty
+        public
+
+  microsoftVoterRegistryCid <- submit microsoft do
+    exerciseCmd microsoftIssuer CreateVoterRegistry
+      with
+        investors = empty
+
   appleVoterRegistryCid <- submit apple do
     exerciseCmd appleVoterRegistryCid AddInvestor
+      with
+        investor = alice
+
+  microsoftVoterRegistryCid <- submit microsoft do
+    exerciseCmd microsoftVoterRegistryCid AddInvestor
       with
         investor = alice
 
@@ -78,6 +102,14 @@ setup = script do
 
   aliceVote <- submit apple do
     exerciseCmd appleIssuer IssueVote
+      with
+        investor = alice
+        quantity = 10
+        issued = now
+        proxy = None
+
+  aliceVote2 <- submit microsoft do
+    exerciseCmd microsoftIssuer IssueVote
       with
         investor = alice
         quantity = 10
@@ -107,10 +139,22 @@ setup = script do
         proxy = bob
         public
 
+  faithProxy <- submit admin do
+    createCmd Proxy
+      with
+        admin
+        proxy = faith
+        public
+
   bobAppleProxy <- submit apple do
     exerciseCmd appleIssuer GrantProxyRights
       with
         proxy = bob
+
+  faithAppleProxy <- submit apple do
+    exerciseCmd appleIssuer GrantProxyRights
+      with
+        proxy = faith
 
   -- Alice transfers vote to proxy Bob
   aliceToBobVoteTransfer <- submit alice do
@@ -125,8 +169,8 @@ setup = script do
         transferId = aliceToBobVoteTransfer
 
   -- Alice decides to remove proxy Bob
-  aliceRemoveProxyVote <- submit alice do
-    exerciseCmd aliceBobVote RemoveProxy
+  -- aliceRemoveProxyVote <- submit alice do
+  --   exerciseCmd aliceBobVote RemoveProxy
 
   -- create Election
   let id = "123"
@@ -143,9 +187,8 @@ setup = script do
     exerciseCmd election IssueBallots
       with
         symbol = "AAPL"
-        proxy = None
 
-  aliceFilledBallot <- submit alice do
+  bobFilledBallot <- submit bob do
     exerciseByKeyCmd @Ballot (alice, apple, date, id) FillBallot
       with
         vote = True

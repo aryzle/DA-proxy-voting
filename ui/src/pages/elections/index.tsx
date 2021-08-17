@@ -1,88 +1,200 @@
-import React, { useState } from "react";
-import Table from "@material-ui/core/Table";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import TableCell from "@material-ui/core/TableCell";
-import TableBody from "@material-ui/core/TableBody";
-import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
-import AddCircle from "@material-ui/icons/AddCircle";
-import Ledger, { CreateEvent } from "@daml/ledger";
-import { useStreamQueries, useLedger, useParty } from "@daml/react";
-import { ContractId } from "@daml/types";
-import { Election } from "@daml.js/proxy-voting-0.0.1/lib/Election";
-import { Issuer } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin";
-import { Box, Typography } from "@material-ui/core";
+import React, { useState } from "react"
+import Table from "@material-ui/core/Table"
+import TableHead from "@material-ui/core/TableHead"
+import TableRow from "@material-ui/core/TableRow"
+import TableCell from "@material-ui/core/TableCell"
+import TableBody from "@material-ui/core/TableBody"
+import Button from "@material-ui/core/Button"
+import IconButton from "@material-ui/core/IconButton"
+import AddCircle from "@material-ui/icons/AddCircle"
+import Ledger, { CreateEvent } from "@daml/ledger"
+import { useStreamQueries, useLedger, useParty } from "@daml/react"
+import { ContractId } from "@daml/types"
+import { Election, ElectionResult, Ballot, FilledOutBallot } from "@daml.js/proxy-voting-0.0.1/lib/Election"
+import { Issuer } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin"
+import { Box, Typography } from "@material-ui/core"
 import { CreateElectionDialog } from "./CreateElectionDialog"
-import useStyles from "./styles";
+import { ElectionResultDialog } from "./ElectionResultDialog"
+import { FillBallotDialog } from "./FillBallotDialog"
+import useStyles from "./styles"
 
-export default function Report() {
-  const classes = useStyles();
-  const party = useParty();
-  const ledger : Ledger = useLedger();
-  const { contracts: elections, loading: electionLoading } = useStreamQueries(Election);
-  const { contracts: issuers, loading: issuerLoading } = useStreamQueries(Issuer);
+export default function Elections() {
+  const classes = useStyles()
+  const party = useParty()
+  const ledger : Ledger = useLedger()
+  const { contracts: elections, loading: electionLoading } = useStreamQueries(Election)
+  const { contracts: electionResults, loading: electionResultsLoading } = useStreamQueries(ElectionResult)
+  const { contracts: ballots, loading: ballotsLoading } = useStreamQueries(Ballot)
+  const { contracts: filledOutBallots, loading: filledOutBallotsLoading } = useStreamQueries(FilledOutBallot)
+  const { contracts: issuers, loading: issuerLoading } = useStreamQueries(Issuer)
   const issuerContract = issuers.filter(issuer => issuer.payload.issuer === party).pop()
   const isIssuer = !!issuerContract
 
-  const [open, setOpen] = React.useState(false);
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const [createElectionDialogOpen, setCreateElectionDialogOpen] = React.useState(false)
+  const openCreateElectionDialog = () => {
+    setCreateElectionDialogOpen(true)
+  }
+  const closeCreateElectionDialog = () => {
+    setCreateElectionDialogOpen(false)
+  }
   const createElection = async (id: string, date: string, description: string) => {
     if (!issuerContract) return
 
     const [choiceReturnValue, events] = await ledger.exercise(Issuer.CreateElection, issuerContract.contractId, {id, date, description})
     console.log(choiceReturnValue)
     console.log(events)
-    handleClose()
+    closeCreateElectionDialog()
+  }
+
+  const issueBallots = (symbol: string, electionId: ContractId<Election>) => async () => {
+    const [choiceReturnValue, events] = await ledger.exercise(Election.IssueBallots, electionId, {symbol})
+  }
+  const collectBallots = (electionId: ContractId<Election>) => async () => {
+    const [choiceReturnValue, events] = await ledger.exercise(Election.CollectBallots, electionId, {})
+  }
+
+  const [fillBallotDialogOpen, setFillBallotDialogOpen] = React.useState(false)
+  const fillBallot = (ballotId: ContractId<Ballot>) => async (voteNum: number) => {
+    const vote = voteNum > 0 ? true : false
+    const [choiceReturnValue, events] = await ledger.exercise(Ballot.FillBallot, ballotId, {vote})
+    console.log(choiceReturnValue)
+    console.log(events)
+  }
+  const openFillBallotDialog = () => {
+    setFillBallotDialogOpen(true)
+  }
+  const closeFillBallotDialog = () => {
+    setFillBallotDialogOpen(false)
+  }
+
+  const [electionResultDialogOpen, setElectionResultDialogOpen] = React.useState(false)
+  const openElectionResultDialog = () => {
+    setElectionResultDialogOpen(true)
+  }
+  const closeElectionResultDialog = () => {
+    setElectionResultDialogOpen(false)
+  }
+
+  const renderInvestorActions = (e: CreateEvent<Election>) => {
+    if (!e.payload.investors.map.has(party))
+      return
+
+    const ballot = ballots.find(b => b.payload.electionId === e.payload.id)
+    if (!ballot)
+      return
+
+    return (
+      <TableCell key={5} className={classes.tableCell}>
+        <Button color="primary" variant="outlined" size="small" onClick={openFillBallotDialog}>Fill Ballot</Button>
+        <FillBallotDialog
+          open={fillBallotDialogOpen}
+          title={"Fill Ballot"}
+          electionId={e.payload.id}
+          electionDescription={e.payload.description}
+          onClose={closeFillBallotDialog}
+          fillBallot={fillBallot(ballot.contractId)}
+        />
+      </TableCell>
+    )
   }
 
   return (
     <>
-      <Box mb={5}>
-        <Box display="flex">
-          <Typography className={classes.header} variant="h2" component="h2">
-            Elections
-          </Typography>
-          {isIssuer &&
-            <>
-              <IconButton color="primary" onClick={handleClickOpen}>
-                Create Election
-                <AddCircle />
-              </IconButton>
-              <CreateElectionDialog open={open} title={"Create Election"} onClose={handleClose} createElection={createElection} />
-            </>
-          }
-        </Box>
-        <Table size="small">
-          <TableHead>
-            <TableRow className={classes.tableRow}>
-              <TableCell key={0} className={classes.tableCell}>Date</TableCell>
-              <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
-              <TableCell key={2} className={classes.tableCell}>Description</TableCell>
-              <TableCell key={3} className={classes.tableCell}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {elections.map(v => (
-              <TableRow key={v.contractId} className={classes.tableRow}>
-                <TableCell key={0} className={classes.tableCell}>{v.payload.date}</TableCell>
-                <TableCell key={1} className={classes.tableCell}>{v.payload.issuer}</TableCell>
-                <TableCell key={2} className={classes.tableCell}>{v.payload.description}</TableCell>
-                {party === v.payload.issuer &&
-                  <TableCell key={5} className={classes.tableCell}>
-                    <Button color="primary" variant="outlined" size="small">Collect Ballots</Button>
-                  </TableCell>
-                }
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <Box display="flex">
+        <Typography className={classes.header} variant="h2" component="h2">
+          Elections
+        </Typography>
+        {isIssuer &&
+          <>
+            <IconButton color="primary" onClick={openCreateElectionDialog}>
+              Create Election
+              <AddCircle />
+            </IconButton>
+            <CreateElectionDialog
+              open={createElectionDialogOpen}
+              title={"Create Election"}
+              onClose={closeCreateElectionDialog}
+              createElection={createElection}
+            />
+          </>
+        }
       </Box>
+      <Table size="small">
+        <TableHead>
+          <TableRow className={classes.tableRow}>
+            <TableCell key={0} className={classes.tableCell}>Date</TableCell>
+            <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
+            <TableCell key={2} className={classes.tableCell}>Description</TableCell>
+            <TableCell key={3} className={classes.tableCell}>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {elections.map(e => (
+            <TableRow key={e.contractId} className={classes.tableRow}>
+              <TableCell key={0} className={classes.tableCell}>{e.payload.date}</TableCell>
+              <TableCell key={1} className={classes.tableCell}>{e.payload.issuer}</TableCell>
+              <TableCell key={2} className={classes.tableCell}>{e.payload.description}</TableCell>
+              <TableCell key={3} className={classes.tableCell}>
+                {party === e.payload.admin && !!ballots.find(b => b.payload.electionId === e.payload.id) &&
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                      onClick={collectBallots(e.contractId)}>Collect Ballots</Button>
+                }
+                {party === e.payload.issuer && !ballots.find(b => b.payload.electionId === e.payload.id) && issuerContract &&
+                  <Button color="primary"
+                    variant="outlined"
+                    size="small"
+                    onClick={issueBallots(issuerContract.payload.symbol, e.contractId)}
+                  >
+                    Issue Ballots
+                  </Button>
+              }
+              </TableCell>
+              {renderInvestorActions(e)}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <Box display="flex" mt={5}>
+        <Typography className={classes.header} variant="h2" component="h2">
+          Previous Elections
+        </Typography>
+      </Box>
+      <Table size="small">
+        <TableHead>
+          <TableRow className={classes.tableRow}>
+            <TableCell key={0} className={classes.tableCell}>Date</TableCell>
+            <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
+            <TableCell key={2} className={classes.tableCell}>Description</TableCell>
+            <TableCell key={3} className={classes.tableCell}>Votes For</TableCell>
+            <TableCell key={4} className={classes.tableCell}>Votes Against</TableCell>
+            <TableCell key={5} className={classes.tableCell}>Absent</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {electionResults.map(er => (
+            <>
+              <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog} hover>
+                <TableCell key={0} className={classes.tableCell}>{er.payload.date}</TableCell>
+                <TableCell key={1} className={classes.tableCell}>{er.payload.issuer}</TableCell>
+                <TableCell key={2} className={classes.tableCell}>{er.payload.description}</TableCell>
+                <TableCell key={3} className={classes.tableCell}>{er.payload.votesFor}</TableCell>
+                <TableCell key={4} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
+                <TableCell key={5} className={classes.tableCell}>{er.payload.absentee}</TableCell>
+              </TableRow>
+              <ElectionResultDialog
+                open={electionResultDialogOpen}
+                title={"Election Result"}
+                onClose={closeElectionResultDialog}
+                election={er.payload}
+                filledOutBallot={filledOutBallots.find(b => b.payload.investor === party || !!b.payload.proxy)?.payload}
+              />
+            </>
+          ))}
+        </TableBody>
+      </Table>
     </>
-  );
+  )
 }

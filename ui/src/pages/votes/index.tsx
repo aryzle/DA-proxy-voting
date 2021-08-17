@@ -5,16 +5,19 @@ import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import TableBody from "@material-ui/core/TableBody";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 import Ledger, { CreateEvent } from "@daml/ledger";
+import DamlLedger from "@daml/react";
 import { useStreamQueries, useLedger, useParty } from "@daml/react";
-import { ContractId } from "@daml/types";
 import { Vote, VoteTransfer  } from "@daml.js/proxy-voting-0.0.1/lib/Vote";
-import { Proxy, IssuerApprovedProxy } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin";
+import { IssuerApprovedProxy } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin";
 import useStyles from "./styles";
 import { Box, Typography } from "@material-ui/core";
+import { SetProxyDialog } from "./SetProxyDialog";
+import { wsBaseUrl, httpBaseUrl } from "config";
+import { useUserState } from "context/UserContext";
 
-export default function Report() {
+export default function Votes() {
+  const user = useUserState();
   const classes = useStyles();
   const party = useParty();
   const ledger : Ledger = useLedger();
@@ -22,8 +25,18 @@ export default function Report() {
   const { contracts: voteTranfers, loading: voteTransferLoading } = useStreamQueries(VoteTransfer)
   const { contracts: iAProxies, loading: iAProxyLoading } = useStreamQueries(IssuerApprovedProxy)
 
-  const setProxy = (v: CreateEvent<Vote>) => async (e: React.MouseEvent<HTMLElement>) => {
-    const [choiceReturnValue, events] = await ledger.exercise(Vote.Transfer, v.contractId, {newProxy: "Bob"})
+  const [vote, setVote] = React.useState<CreateEvent<Vote>>()
+  const [proxyDialogOpen, setProxyDialogOpen] = React.useState(false)
+  const openSetProxyDialog = (v: CreateEvent<Vote>) => () => {
+    setVote(v)
+    setProxyDialogOpen(true)
+  }
+  const closeProxyDialog = () => {
+    setProxyDialogOpen(false)
+  }
+
+  const setProxy = (v: CreateEvent<Vote>) => async (newProxy: string) => {
+    const [choiceReturnValue, events] = await ledger.exercise(Vote.Transfer, v.contractId, {newProxy})
     console.log(choiceReturnValue)
     console.log(events)
   }
@@ -60,6 +73,8 @@ export default function Report() {
     console.log(events)
   }
 
+  if (!user.isAuthenticated) return null
+
   return (
     <>
       <Box mb={5}>
@@ -78,19 +93,24 @@ export default function Report() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {votes.map(v => (
-              <TableRow key={v.contractId} className={classes.tableRow}>
-                <TableCell key={0} className={classes.tableCell}>{v.payload.investor}</TableCell>
-                <TableCell key={1} className={classes.tableCell}>{v.payload.issuer}</TableCell>
-                <TableCell key={2} className={classes.tableCell}>{v.payload.symbol}</TableCell>
-                <TableCell key={3} className={classes.tableCell}>{v.payload.quantity}</TableCell>
-                <TableCell key={4} className={classes.tableCell} onClick={removeProxy(v)}>{v.payload.proxy || "None"}</TableCell>
-                {party === v.payload.investor && <TableCell key={5} className={classes.tableCell}>
-                  <Button onClick={setProxy(v)} color="primary" variant="outlined" size="small">Set Proxy</Button>
-                  {!!v.payload.proxy && <Button onClick={removeProxy(v)} color="primary" variant="outlined" size="small">Remove Proxy</Button>}
-                </TableCell>}
-              </TableRow>
-            ))}
+            <DamlLedger party="Public" token={user.publicToken} httpBaseUrl={httpBaseUrl} wsBaseUrl={wsBaseUrl}>
+              {votes.map(v => (
+                <TableRow key={v.contractId} className={classes.tableRow}>
+                  <TableCell key={0} className={classes.tableCell}>{v.payload.investor}</TableCell>
+                  <TableCell key={1} className={classes.tableCell}>{v.payload.issuer}</TableCell>
+                  <TableCell key={2} className={classes.tableCell}>{v.payload.symbol}</TableCell>
+                  <TableCell key={3} className={classes.tableCell}>{v.payload.quantity}</TableCell>
+                  <TableCell key={4} className={classes.tableCell} onClick={removeProxy(v)}>{v.payload.proxy || "None"}</TableCell>
+                  {party === v.payload.investor &&
+                    <TableCell key={5} className={classes.tableCell}>
+                      <Button onClick={openSetProxyDialog(v)} color="primary" variant="outlined" size="small">Set Proxy</Button>
+                      {!!v.payload.proxy && <Button onClick={removeProxy(v)} color="primary" variant="outlined" size="small">Remove Proxy</Button>}
+                    </TableCell>
+                  }
+                </TableRow>
+              ))}
+              {vote && <SetProxyDialog open={proxyDialogOpen} title="Set Proxy" setProxy={setProxy(vote)} issuer={vote.payload.issuer} onClose={closeProxyDialog} />}
+            </DamlLedger>
           </TableBody>
         </Table>
       </Box>

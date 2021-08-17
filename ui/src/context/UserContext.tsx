@@ -1,11 +1,12 @@
 import React from "react";
 import { History } from 'history';
-import { createToken, dablLoginUrl, damlPartyKey, damlTokenKey } from "../config";
+import { createPublicToken, createToken, dablLoginUrl, damlPartyKey, damlPublicTokenKey, damlTokenKey } from "../config";
 
 type AuthenticatedUser = {
   isAuthenticated : true
   token : string
   party : string
+  publicToken : string
 }
 
 type UnAthenticated = {
@@ -18,6 +19,7 @@ type LoginSuccess = {
   type : "LOGIN_SUCCESS"
   token : string
   party : string
+  publicToken : string
 }
 
 type LoginFailure = {
@@ -36,7 +38,7 @@ const UserDispatchContext = React.createContext<React.Dispatch<LoginAction>>({} 
 function userReducer(state : UserState, action : LoginAction) : UserState {
   switch (action.type) {
     case "LOGIN_SUCCESS":
-      return { isAuthenticated: true, token: action.token, party: action.party };
+      return { isAuthenticated: true, token: action.token, party: action.party, publicToken: action.publicToken };
     case "LOGIN_FAILURE":
       return { isAuthenticated: false };
     case "SIGN_OUT_SUCCESS":
@@ -48,8 +50,9 @@ function userReducer(state : UserState, action : LoginAction) : UserState {
 const UserProvider : React.FC = ({ children }) => {
   const party = localStorage.getItem(damlPartyKey);
   const token = localStorage.getItem(damlTokenKey);
+  const publicToken = localStorage.getItem(damlPublicTokenKey)
 
-  let initState : UserState = (!!party && !!token) ? { isAuthenticated : true, token, party } : { isAuthenticated : false };
+  let initState : UserState = (!!party && !!token && !!publicToken) ? { isAuthenticated : true, token, party, publicToken } : { isAuthenticated : false };
   const [state, dispatch] = React.useReducer<React.Reducer<UserState,LoginAction>>(userReducer, initState);
 
   return (
@@ -92,10 +95,12 @@ function loginUser(
 
   if (!!party) {
     const token = userToken || createToken(party)
+    const publicToken = createPublicToken()
     localStorage.setItem(damlPartyKey, party);
     localStorage.setItem(damlTokenKey, token);
+    localStorage.setItem(damlPublicTokenKey, publicToken)
 
-    dispatch({ type: "LOGIN_SUCCESS", token, party });
+    dispatch({ type: "LOGIN_SUCCESS", token, party, publicToken });
     setError(false);
     setIsLoading(false);
     history.push("/app");
@@ -111,8 +116,9 @@ const loginDablUser = () => {
 }
 
 function signOut(dispatch : React.Dispatch<LoginAction>, history : History) {
-  localStorage.removeItem("daml.party");
-  localStorage.removeItem("daml.token");
+  localStorage.removeItem(damlPartyKey);
+  localStorage.removeItem(damlTokenKey);
+  localStorage.removeItem(damlPublicTokenKey)
 
   dispatch({ type: "SIGN_OUT_SUCCESS" });
   history.push("/login");

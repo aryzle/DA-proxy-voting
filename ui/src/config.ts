@@ -18,6 +18,7 @@ export const httpBaseUrl = isLocalDev ? undefined : ('https://' + apiUrl.join('.
 export const wsBaseUrl = isLocalDev ? 'ws://localhost:7575/' : undefined
 
 export const createToken = (party : string) => jwt.sign({ "https://daml.com/ledger-api": { ledgerId, applicationId, admin: true, actAs: [party], readAs: [party] } }, "secret")
+export const createPublicToken = () => jwt.sign({ "https://daml.com/ledger-api": { ledgerId, applicationId, admin: true, actAs: ["Public"], readAs: ["Public"] } }, "secret")
 
 let loginUrl = host.slice(1)
 loginUrl.unshift('login')
@@ -26,3 +27,4 @@ export const dablLoginUrl = loginUrl.join('.') + (window.location.port ? ':' + w
 
 export const damlPartyKey = applicationId + ".daml.party"
 export const damlTokenKey = applicationId + ".daml.token"
+export const damlPublicTokenKey = applicationId + ".daml.publicToken"
