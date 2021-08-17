@@ -94,6 +94,7 @@ template Ballot
     electionDate: Date
   where
     signatory admin, issuer
+    observer investor
     key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
     maintainer key._2
 

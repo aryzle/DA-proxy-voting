@@ -76,7 +76,7 @@ export default function Elections() {
   }
 
   const renderInvestorActions = (e: CreateEvent<Election>) => {
-    if (!e.payload.investors.map.has(party))
+    if (!e.payload.investors.map.has(party) && !e.payload.proxies.map.has(party))
       return
 
     const ballot = ballots.find(b => b.payload.electionId === e.payload.id)
@@ -84,7 +84,7 @@ export default function Elections() {
       return
 
     return (
-      <TableCell key={5} className={classes.tableCell}>
+      <>
         <Button color="primary" variant="outlined" size="small" onClick={openFillBallotDialog}>Fill Ballot</Button>
         <FillBallotDialog
           open={fillBallotDialogOpen}
@@ -94,7 +94,7 @@ export default function Elections() {
           onClose={closeFillBallotDialog}
           fillBallot={fillBallot(ballot.contractId)}
         />
-      </TableCell>
+      </>
     )
   }
 
@@ -151,8 +151,8 @@ export default function Elections() {
                     Issue Ballots
                   </Button>
               }
-              </TableCell>
               {renderInvestorActions(e)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

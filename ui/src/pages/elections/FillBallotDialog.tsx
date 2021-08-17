@@ -44,12 +44,11 @@ export function FillBallotDialog<T extends { [key : string] : any }>(props : Inp
           autoFocus
           margin="dense"
           id="vote"
-          label="vote"
           type="text"
           value={vote}
           onChange={(e) => setVote(e.target.value as number)}
-          fullWidth
           required
+          style={{width: 200}}
         >
           <MenuItem value={1}>Yes</MenuItem>
           <MenuItem value={-1}>No</MenuItem>
