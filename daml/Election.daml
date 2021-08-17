@@ -134,6 +134,7 @@ template ElectionResult
   with
     admin: Party
     issuer: Party
+    auditor: Party
     investors: Set Party
     proxies: Set Party
     id: Text
@@ -144,4 +145,4 @@ template ElectionResult
     absentee: Int
   where
     signatory admin, issuer -- TODO: list of investors can be signatory
-    observer investors, proxies -- TODO: add proxy
+    observer investors, proxies, auditor -- TODO: add proxy
