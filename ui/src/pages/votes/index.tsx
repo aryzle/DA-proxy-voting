@@ -85,11 +85,11 @@ export default function Votes() {
           <TableHead>
             <TableRow className={classes.tableRow}>
               <TableCell key={0} className={classes.tableCell}>Investor</TableCell>
-              <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
-              <TableCell key={2} className={classes.tableCell}>Symbol</TableCell>
-              <TableCell key={3} className={classes.tableCell}>Number of Votes</TableCell>
-              <TableCell key={4} className={classes.tableCell}>Proxy</TableCell>
-              <TableCell key={5} className={classes.tableCell}>Actions</TableCell>
+              <TableCell key={1} className={classes.tableCell}>Proxy</TableCell>
+              <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
+              <TableCell key={3} className={classes.tableCell}>Symbol</TableCell>
+              <TableCell key={4} className={classes.tableCell}>Number of Votes</TableCell>
+              {/* <TableCell key={5} className={classes.tableCell}>Actions</TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -97,16 +97,16 @@ export default function Votes() {
               {votes.map(v => (
                 <TableRow key={v.contractId} className={classes.tableRow}>
                   <TableCell key={0} className={classes.tableCell}>{v.payload.investor}</TableCell>
-                  <TableCell key={1} className={classes.tableCell}>{v.payload.issuer}</TableCell>
-                  <TableCell key={2} className={classes.tableCell}>{v.payload.symbol}</TableCell>
-                  <TableCell key={3} className={classes.tableCell}>{v.payload.quantity}</TableCell>
-                  <TableCell key={4} className={classes.tableCell} onClick={removeProxy(v)}>{v.payload.proxy || "None"}</TableCell>
-                  {party === v.payload.investor &&
+                  <TableCell key={1} className={classes.tableCell}>{v.payload.proxy || "None"}</TableCell>
+                  <TableCell key={2} className={classes.tableCell}>{v.payload.issuer}</TableCell>
+                  <TableCell key={3} className={classes.tableCell}>{v.payload.symbol}</TableCell>
+                  <TableCell key={4} className={classes.tableCell}>{v.payload.quantity}</TableCell>
+                  {/* {party === v.payload.investor &&
                     <TableCell key={5} className={classes.tableCell}>
                       <Button onClick={openSetProxyDialog(v)} color="primary" variant="outlined" size="small">Set Proxy</Button>
                       {!!v.payload.proxy && <Button onClick={removeProxy(v)} color="primary" variant="outlined" size="small">Remove Proxy</Button>}
                     </TableCell>
-                  }
+                  } */}
                 </TableRow>
               ))}
               {vote && <SetProxyDialog open={proxyDialogOpen} title="Set Proxy" setProxy={setProxy(vote)} issuer={vote.payload.issuer} onClose={closeProxyDialog} />}

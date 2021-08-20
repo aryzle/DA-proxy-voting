@@ -84,6 +84,9 @@ template Issuer
     signatory admin, custodian
     observer csd, auditor
 
+    key (custodian, issuer): (Party, Party)
+    maintainer key._1
+
     controller issuer can
       nonconsuming CreateVoterRegistry: ContractId VoterRegistry
         with

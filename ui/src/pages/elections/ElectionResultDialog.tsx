@@ -7,6 +7,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from "@material-ui/core/DialogActions";
 import { ElectionResult } from "@daml.js/proxy-voting-0.0.1/lib/Election";
 import { FilledOutBallot } from "@daml.js/proxy-voting-0.0.1/lib/Election";
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import CancelIcon from '@material-ui/icons/Cancel';
 
 export interface InputDialogProps<T extends {[key: string]: any }> {
   open : boolean
@@ -24,11 +26,14 @@ export function ElectionResultDialog<T extends { [key : string] : any }>(props :
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent dividers>
         <DialogContentText>
-          Results for Election {props.election.id} on "{props.election.description}".
+          Topic: "{props.election.description}"
         </DialogContentText>
         <DialogContentText>
           { props.filledOutBallot?.quantity ?
-            `You voted ${props.filledOutBallot?.vote ? "in support of" : "against"} this with ${props.filledOutBallot.quantity.toString()} votes.` :
+            <div style={{display: "flex", alignItems: "center"}}>
+              You voted {props.filledOutBallot?.vote ? "in support of" : "against"} this with {props.filledOutBallot.quantity.toString()} votes
+              {props.filledOutBallot?.vote ? <CheckCircleIcon color="primary" fontSize="large" /> : <CancelIcon color="error" fontSize="large" />}
+            </div>:
             "You did not vote on this."
           }
         </DialogContentText>

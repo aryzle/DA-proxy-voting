@@ -46,19 +46,21 @@ export default function Elections() {
     closeCreateElectionDialog()
   }
 
-  const issueBallots = (symbol: string, electionId: ContractId<Election>) => async () => {
-    const [choiceReturnValue, events] = await ledger.exercise(Election.IssueBallots, electionId, {symbol})
+  const issueBallots = (electionId: ContractId<Election>) => async () => {
+    const [choiceReturnValue, events] = await ledger.exercise(Election.IssueBallots, electionId, {})
   }
   const collectBallots = (electionId: ContractId<Election>) => async () => {
     const [choiceReturnValue, events] = await ledger.exercise(Election.CollectBallots, electionId, {})
   }
 
   const [fillBallotDialogOpen, setFillBallotDialogOpen] = React.useState(false)
-  const fillBallot = (ballotId: ContractId<Ballot>) => async (voteNum: number) => {
+  const fillBallot = (ballotIds: ContractId<Ballot>[]) => async (voteNum: number) => {
     const vote = voteNum > 0 ? true : false
-    const [choiceReturnValue, events] = await ledger.exercise(Ballot.FillBallot, ballotId, {vote})
-    console.log(choiceReturnValue)
-    console.log(events)
+    ballotIds.forEach(async ballotId => {
+      const [choiceReturnValue, events] = await ledger.exercise(Ballot.FillBallot, ballotId, {vote})
+      console.log(choiceReturnValue)
+      console.log(events)
+    })
   }
   const openFillBallotDialog = () => {
     setFillBallotDialogOpen(true)
@@ -76,11 +78,11 @@ export default function Elections() {
   }
 
   const renderInvestorActions = (e: CreateEvent<Election>) => {
-    if (!e.payload.investors.map.has(party) && !e.payload.proxies.map.has(party))
+    if (!e.payload.proxies.map.has(party))
       return
 
-    const ballot = ballots.find(b => b.payload.electionId === e.payload.id)
-    if (!ballot)
+    const ballotIds = ballots.filter(b => b.payload.electionId === e.payload.id).map(b => b.contractId)
+    if (!ballotIds.length)
       return
 
     return (
@@ -92,7 +94,7 @@ export default function Elections() {
           electionId={e.payload.id}
           electionDescription={e.payload.description}
           onClose={closeFillBallotDialog}
-          fillBallot={fillBallot(ballot.contractId)}
+          fillBallot={fillBallot(ballotIds)}
         />
       </>
     )
@@ -122,31 +124,33 @@ export default function Elections() {
       <Table size="small">
         <TableHead>
           <TableRow className={classes.tableRow}>
-            <TableCell key={0} className={classes.tableCell}>Date</TableCell>
-            <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
-            <TableCell key={2} className={classes.tableCell}>Description</TableCell>
-            <TableCell key={3} className={classes.tableCell}>Actions</TableCell>
+            <TableCell key={0} className={classes.tableCell}>ID</TableCell>
+            <TableCell key={1} className={classes.tableCell}>Date</TableCell>
+            <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
+            <TableCell key={3} className={classes.tableCell}>Description</TableCell>
+            <TableCell key={4} className={classes.tableCell}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {elections.map(e => (
             <TableRow key={e.contractId} className={classes.tableRow}>
-              <TableCell key={0} className={classes.tableCell}>{e.payload.date}</TableCell>
-              <TableCell key={1} className={classes.tableCell}>{e.payload.issuer}</TableCell>
-              <TableCell key={2} className={classes.tableCell}>{e.payload.description}</TableCell>
-              <TableCell key={3} className={classes.tableCell}>
-                {party === e.payload.admin && !!ballots.find(b => b.payload.electionId === e.payload.id) &&
+              <TableCell key={0} className={classes.tableCell}>{e.payload.id}</TableCell>
+              <TableCell key={1} className={classes.tableCell}>{e.payload.date}</TableCell>
+              <TableCell key={2} className={classes.tableCell}>{e.payload.issuer}</TableCell>
+              <TableCell key={3} className={classes.tableCell}>{e.payload.description}</TableCell>
+              <TableCell key={4} className={classes.tableCell}>
+                {party === e.payload.admin &&
                     <Button
                       color="primary"
                       variant="outlined"
                       size="small"
                       onClick={collectBallots(e.contractId)}>Collect Ballots</Button>
                 }
-                {party === e.payload.issuer && !ballots.find(b => b.payload.electionId === e.payload.id) && issuerContract &&
+                {party === e.payload.custodian && !ballots.find(b => b.payload.electionId === e.payload.id) &&
                   <Button color="primary"
                     variant="outlined"
                     size="small"
-                    onClick={issueBallots(issuerContract.payload.symbol, e.contractId)}
+                    onClick={issueBallots(e.contractId)}
                   >
                     Issue Ballots
                   </Button>
@@ -165,31 +169,33 @@ export default function Elections() {
       <Table size="small">
         <TableHead>
           <TableRow className={classes.tableRow}>
-            <TableCell key={0} className={classes.tableCell}>Date</TableCell>
-            <TableCell key={1} className={classes.tableCell}>Issuer</TableCell>
-            <TableCell key={2} className={classes.tableCell}>Description</TableCell>
-            <TableCell key={3} className={classes.tableCell}>Votes For</TableCell>
-            <TableCell key={4} className={classes.tableCell}>Votes Against</TableCell>
-            <TableCell key={5} className={classes.tableCell}>Absent</TableCell>
+            <TableCell key={0} className={classes.tableCell}>ID</TableCell>
+            <TableCell key={1} className={classes.tableCell}>Date</TableCell>
+            <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
+            <TableCell key={3} className={classes.tableCell}>Description</TableCell>
+            <TableCell key={4} className={classes.tableCell}>Votes For</TableCell>
+            <TableCell key={5} className={classes.tableCell}>Votes Against</TableCell>
+            <TableCell key={6} className={classes.tableCell}>Absent</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {electionResults.map(er => (
             <>
               <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog} hover>
-                <TableCell key={0} className={classes.tableCell}>{er.payload.date}</TableCell>
-                <TableCell key={1} className={classes.tableCell}>{er.payload.issuer}</TableCell>
-                <TableCell key={2} className={classes.tableCell}>{er.payload.description}</TableCell>
-                <TableCell key={3} className={classes.tableCell}>{er.payload.votesFor}</TableCell>
-                <TableCell key={4} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
-                <TableCell key={5} className={classes.tableCell}>{er.payload.absentee}</TableCell>
+                <TableCell key={0} className={classes.tableCell}>{er.payload.id}</TableCell>
+                <TableCell key={1} className={classes.tableCell}>{er.payload.date}</TableCell>
+                <TableCell key={2} className={classes.tableCell}>{er.payload.issuer}</TableCell>
+                <TableCell key={3} className={classes.tableCell}>{er.payload.description}</TableCell>
+                <TableCell key={4} className={classes.tableCell}>{er.payload.votesFor}</TableCell>
+                <TableCell key={5} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
+                <TableCell key={6} className={classes.tableCell}>{er.payload.absentee}</TableCell>
               </TableRow>
               <ElectionResultDialog
                 open={electionResultDialogOpen}
-                title={"Election Result"}
+                title={`Election ${er.payload.id} Result`}
                 onClose={closeElectionResultDialog}
                 election={er.payload}
-                filledOutBallot={filledOutBallots.find(b => b.payload.investor === party || !!b.payload.proxy)?.payload}
+                filledOutBallot={filledOutBallots.find(b => b.payload.electionId === er.payload.id && b.payload.issuer === er.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))?.payload}
               />
             </>
           ))}

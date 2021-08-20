@@ -18,13 +18,14 @@ template Election
     date: Date
     admin: Party
     issuer: Party
+    symbol: Text
     id: Text
     description: Text
+    custodian: Party
     csd: Party -- DTCC
     auditor: Party -- the Fed
     investors: Set Party
     votedInvestors: Set Party
-    -- TODO: add proxies
     proxies: Set Party
     votedProxies: Set Party
   where
@@ -33,11 +34,9 @@ template Election
     key (issuer, date, id): (Party, Date, Text)
     maintainer key._1
 
-    controller issuer can
+    controller custodian can
       -- issue ballots 1:1 to votes per investor
       nonconsuming IssueBallots: [ContractId Ballot]
-        with
-          symbol: Text
         do
           forA (toList investors) (\investor -> do
             (voteId, vote) <- fetchByKey @Vote (issuer, symbol, investor)
@@ -87,13 +86,14 @@ template Ballot
   with
     admin: Party
     issuer: Party
+    custodian: Party
     investor: Party
     proxy: Optional Party
     quantity: Int
     electionId: Text
     electionDate: Date
   where
-    signatory admin, issuer
+    signatory admin, issuer, custodian
     observer investor
     key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
     maintainer key._2
@@ -115,6 +115,7 @@ template FilledOutBallot
   with
     admin: Party
     issuer: Party
+    custodian: Party
     investor: Party
     proxy: Optional Party
     quantity: Int
@@ -122,7 +123,7 @@ template FilledOutBallot
     electionDate: Date
     vote: Bool
   where
-    signatory admin, issuer, fromOptional investor proxy
+    signatory admin, issuer, custodian, fromOptional investor proxy
     observer investor
     key (investor, issuer, electionDate, electionId): (Party, Party, Date, Text)
     maintainer key._2
@@ -134,6 +135,7 @@ template ElectionResult
   with
     admin: Party
     issuer: Party
+    custodian: Party
     auditor: Party
     investors: Set Party
     proxies: Set Party
@@ -145,4 +147,4 @@ template ElectionResult
     absentee: Int
   where
     signatory admin, issuer -- TODO: list of investors can be signatory
-    observer investors, proxies, auditor -- TODO: add proxy
+    observer custodian, investors, proxies, auditor

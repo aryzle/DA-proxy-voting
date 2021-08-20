@@ -40,7 +40,7 @@ export function SetProxyDialog<T extends { [key : string] : any }>(props : Input
     )
 
   const proxyRegistry = proxyRegistries[0]
-  if (!proxyRegistry)
+  if (!proxyRegistry || !proxyRegistry.payload.proxies.map.entriesArray().length)
     return (
       <Dialog open={props.open} onClose={() => props.onClose()} maxWidth="sm" fullWidth>
         <DialogTitle>{props.title}</DialogTitle>

@@ -53,8 +53,8 @@ template VoterRegistry
 template Vote
   with
     investor: Party
-    admin: Party -- Broadridge?
-    issuer: Party -- Apple?
+    admin: Party -- Broadridge
+    issuer: Party -- Apple
     csd: Party -- DTCC
     custodian: Party -- BoNY
     auditor: Party -- the Fed
@@ -98,7 +98,7 @@ template VoteTransfer
     newProxy: Optional Party -- can be optional
   where
     signatory admin, investor, issuer, custodian
-    observer csd, auditor
+    observer csd, auditor, proxy
 
     controller newProxy, admin can
       AcceptTransfer: ContractId Vote

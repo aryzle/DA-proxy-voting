@@ -1,4 +1,5 @@
 /.daml
 sandbox.log
+navigator.log
 node_modules
 daml.js

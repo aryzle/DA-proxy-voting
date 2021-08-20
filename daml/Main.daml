@@ -2,6 +2,7 @@ module Main where
 
 import Daml.Script
 import DA.Date as Date
+import DA.Foldable (mapA_)
 import DA.Set as Set
 
 import Election
@@ -12,193 +13,309 @@ import UserAdmin
 setup : Script ()
 setup = script do
   alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
-  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  alpha <- allocatePartyWithHint "Fund Alpha" (PartyIdHint "Fund Alpha")
   charlie <- allocatePartyWithHint "Charlie" (PartyIdHint "Charlie")
   dan <- allocatePartyWithHint "Dan" (PartyIdHint "Dan")
-  faith <- allocatePartyWithHint "Faith" (PartyIdHint "Faith")
-  admin <- allocatePartyWithHint "Broadridge" (PartyIdHint "Broadridge")
+  beta <- allocatePartyWithHint "Fund Beta" (PartyIdHint "Fund Beta")
+  gamma <- allocatePartyWithHint "Fund Gamma" (PartyIdHint "Fund Gamma")
+  admin <- allocatePartyWithHint "Putnam" (PartyIdHint "Putnam")
   apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
   microsoft <- allocatePartyWithHint "Microsoft" (PartyIdHint "Microsoft")
+  amazon <- allocatePartyWithHint "Amazon" (PartyIdHint "Amazon")
+  google <- allocatePartyWithHint "Google" (PartyIdHint "Google")
+  facebook <- allocatePartyWithHint "Facebook" (PartyIdHint "Facebook")
   dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
   bony <- allocatePartyWithHint "BoNY" (PartyIdHint "BoNY")
-  fed <- allocatePartyWithHint "Fed" (PartyIdHint "Fed")
+  regulator <- allocatePartyWithHint "Regulator" (PartyIdHint "Regulator")
   public <- allocatePartyWithHint "Public" (PartyIdHint "Public")
 
   now <- getTime
+  let
+    investors = [alice, charlie, dan]
+    issuers = [(apple, "AAPL"), (microsoft, "MSFT"), (amazon, "AMZN"), (google, "GOOG"), (facebook, "FB")]
 
-  aliceInvestor <- submit admin do
-    createCmd Investor
-      with
-        admin
-        investor = alice
+  -- create Investors
+  mapA_ (\investor -> submit admin do
+    createCmd Investor with ..
+    ) (investors)
 
-  charlieInvestor <- submit admin do
-    createCmd Investor
-      with
-        admin
-        investor = charlie
-
-  danInvestor <- submit admin do
-    createCmd Investor
-      with
-        admin
-        investor = dan
-
+  -- create Custodian
   bonyCustodian <- submit admin do
     createCmd Custodian
       with
         admin
         custodian = bony
         csd = dtcc
-        auditor = fed
+        auditor = regulator
 
-  appleIssuer <- submit bony do
-    exerciseCmd bonyCustodian GrantIssuerRights
-      with
-        issuer = apple
-        symbol = "AAPL"
+  -- create Issuers
+  mapA_ (\(issuer, symbol) -> submit bony do
+    exerciseCmd bonyCustodian GrantIssuerRights with ..
+    ) issuers
 
-  microsoftIssuer <- submit bony do
-    exerciseCmd bonyCustodian GrantIssuerRights
-      with
-        issuer = microsoft
-        symbol = "MSFT"
-
-  appleVoterRegistryCid <- submit apple do
-    exerciseCmd appleIssuer CreateVoterRegistry
+  -- create Registries
+  mapA_ (\(issuer, _) -> submit issuer do
+    exerciseByKeyCmd @Issuer (bony, issuer) CreateVoterRegistry
       with
         investors = empty
-
-  appleProxyRegistryCid <- submit apple do
-    exerciseCmd appleIssuer CreateProxyRegistry
+    ) issuers
+  mapA_ (\(issuer, _) -> submit issuer do
+    exerciseByKeyCmd @Issuer (bony, issuer) CreateProxyRegistry
       with
         proxies = empty
         public
+    ) issuers
 
-  microsoftVoterRegistryCid <- submit microsoft do
-    exerciseCmd microsoftIssuer CreateVoterRegistry
-      with
-        investors = empty
+  -- add to Registries
+  mapA_ (\ investor -> submit apple do
+    exerciseByKeyCmd @VoterRegistry apple AddInvestor
+      with ..
+    ) investors
+  mapA_ (\ investor -> submit google do
+    exerciseByKeyCmd @VoterRegistry google AddInvestor
+      with ..
+    ) investors
+  mapA_ (\ investor -> submit amazon do
+    exerciseByKeyCmd @VoterRegistry amazon AddInvestor
+      with ..
+    ) investors
 
-  appleVoterRegistryCid <- submit apple do
-    exerciseCmd appleVoterRegistryCid AddInvestor
+  submit microsoft do
+    exerciseByKeyCmd @VoterRegistry microsoft AddInvestor
       with
         investor = alice
 
-  microsoftVoterRegistryCid <- submit microsoft do
-    exerciseCmd microsoftVoterRegistryCid AddInvestor
-      with
-        investor = alice
-
-  appleVoterRegistryCid <- submit apple do
-    exerciseCmd appleVoterRegistryCid AddInvestor
+  submit microsoft do
+    exerciseByKeyCmd @VoterRegistry microsoft AddInvestor
       with
         investor = charlie
 
-  appleVoterRegistryCid <- submit apple do
-    exerciseCmd appleVoterRegistryCid AddInvestor
-      with
-        investor = dan
-
-  aliceVote <- submit apple do
-    exerciseCmd appleIssuer IssueVote
-      with
-        investor = alice
-        quantity = 10
-        issued = now
-        proxy = None
-
-  aliceVote2 <- submit microsoft do
-    exerciseCmd microsoftIssuer IssueVote
-      with
-        investor = alice
-        quantity = 10
-        issued = now
-        proxy = None
-
-  charlieVote <- submit apple do
-    exerciseCmd appleIssuer IssueVote
-      with
-        investor = charlie
-        quantity = 5
-        issued = now
-        proxy = None
-
-  danVote <- submit apple do
-    exerciseCmd appleIssuer IssueVote
-      with
-        investor = dan
-        quantity = 5
-        issued = now
-        proxy = None
-  
+  -- create Proxies
   bobProxy <- submit admin do
     createCmd Proxy
       with
         admin
-        proxy = bob
+        proxy = alpha
         public
 
   faithProxy <- submit admin do
     createCmd Proxy
       with
         admin
-        proxy = faith
+        proxy = beta
+        public
+
+  faithProxy <- submit admin do
+    createCmd Proxy
+      with
+        admin
+        proxy = gamma
         public
 
   bobAppleProxy <- submit apple do
-    exerciseCmd appleIssuer GrantProxyRights
+    exerciseByKeyCmd @Issuer (bony, apple) GrantProxyRights
       with
-        proxy = bob
+        proxy = alpha
 
-  faithAppleProxy <- submit apple do
-    exerciseCmd appleIssuer GrantProxyRights
+  gammaAppleProxy <- submit apple do
+    exerciseByKeyCmd @Issuer (bony, apple) GrantProxyRights
       with
-        proxy = faith
+        proxy = gamma
 
-  -- Alice transfers vote to proxy Bob
-  aliceToBobVoteTransfer <- submit alice do
-    exerciseCmd aliceVote Transfer
+  faithMicrosoftProxy <- submit microsoft do
+    exerciseByKeyCmd @Issuer (bony, microsoft) GrantProxyRights
       with
-        newProxy = Some bob
+        proxy = beta
 
-  -- proxy Bob accepts Alice's vote
-  aliceBobVote <- submit bob do
-    exerciseCmd bobAppleProxy AcceptVoteAsProxy
+  -- issue Votes
+  aliceVote <- submit apple do
+    exerciseByKeyCmd @Issuer (bony, apple) IssueVote
       with
-        transferId = aliceToBobVoteTransfer
+        investor = alice
+        quantity = 10
+        issued = now
+        proxy = Some alpha
 
-  -- Alice decides to remove proxy Bob
-  -- aliceRemoveProxyVote <- submit alice do
-  --   exerciseCmd aliceBobVote RemoveProxy
+  aliceVote2 <- submit microsoft do
+    exerciseByKeyCmd @Issuer (bony, microsoft) IssueVote
+      with
+        investor = alice
+        quantity = 20
+        issued = now
+        proxy = Some beta
 
-  -- create Election
+  aliceVote3 <- submit google do
+    exerciseByKeyCmd @Issuer (bony, google) IssueVote
+      with
+        investor = alice
+        quantity = 30
+        issued = now
+        proxy = Some beta
+
+  charlieVote <- submit apple do
+    exerciseByKeyCmd @Issuer (bony, apple) IssueVote
+      with
+        investor = charlie
+        quantity = 5
+        issued = now
+        proxy = Some alpha
+
+  charlieVote2 <- submit microsoft do
+    exerciseByKeyCmd @Issuer (bony, microsoft) IssueVote
+      with
+        investor = charlie
+        quantity = 10
+        issued = now
+        proxy = Some beta
+
+  charlieVote3 <- submit google do
+    exerciseByKeyCmd @Issuer (bony, google) IssueVote
+      with
+        investor = charlie
+        quantity = 15
+        issued = now
+        proxy = Some beta
+
+  danVote <- submit apple do
+    exerciseByKeyCmd @Issuer (bony, apple) IssueVote
+      with
+        investor = dan
+        quantity = 50
+        issued = now
+        proxy = Some gamma
+
+  -- -- Alice transfers vote to proxy Bob
+  -- aliceToBobVoteTransfer <- submit alice do
+  --   exerciseCmd aliceVote Transfer
+  --     with
+  --       newProxy = Some alpha
+
+  -- aliceToBobVoteTransfer2 <- submit alice do
+  --   exerciseCmd aliceVote2 Transfer
+  --     with
+  --       newProxy = Some alpha
+
+  -- -- proxy Bob accepts Alice's vote
+  -- aliceBobVote <- submit alpha do
+  --   exerciseCmd bobAppleProxy AcceptVoteAsProxy
+  --     with
+  --       transferId = aliceToBobVoteTransfer
+  -- aliceBobVote2 <- submit alpha do
+  --   exerciseCmd bobAppleProxy AcceptVoteAsProxy
+  --     with
+  --       transferId = aliceToBobVoteTransfer2
+
+  -- create Election 123
   let id = "123"
   let date = Date.date 2021 Date.Jul 14
   election <- submit apple do
-    exerciseCmd appleIssuer CreateElection
+    exerciseByKeyCmd @Issuer (bony, apple) CreateElection
       with
         id
         date
         description = "vote on CEO"
-  
-  -- create ballot for Apple shareholders
-  ballots <- submit apple do
-    exerciseCmd election IssueBallots
-      with
-        symbol = "AAPL"
 
-  bobFilledBallot <- submit bob do
+  -- create ballot for Apple shareholders
+  ballots <- submit bony do
+    exerciseCmd election IssueBallots
+
+  bobFilledBallot <- submit alpha do
     exerciseByKeyCmd @Ballot (alice, apple, date, id) FillBallot
       with
         vote = True
 
-  charlieFilledBallot <- submit charlie do
+  bobFilledBallot <- submit alpha do
     exerciseByKeyCmd @Ballot (charlie, apple, date, id) FillBallot
+      with
+        vote = True
+
+  submit admin do
+    exerciseByKeyCmd @Election (apple, date, id) CollectBallots
+
+  -- create Election 102
+  let id = "102"
+  let date = Date.date 2021 Date.May 17
+  election <- submit apple do
+    exerciseByKeyCmd @Issuer (bony, apple) CreateElection
+      with
+        id
+        date
+        description = "vote on budget"
+
+  -- create ballot for Apple shareholders
+  ballots <- submit bony do
+    exerciseCmd election IssueBallots
+
+  submit alpha do
+    exerciseByKeyCmd @Ballot (alice, apple, date, id) FillBallot
+      with
+        vote = True
+
+  submit alpha do
+    exerciseByKeyCmd @Ballot (charlie, apple, date, id) FillBallot
+      with
+        vote = True
+
+  submit gamma do
+    exerciseByKeyCmd @Ballot (dan, apple, date, id) FillBallot
+      with
+        vote = True
+
+  submit admin do
+    exerciseByKeyCmd @Election (apple, date, id) CollectBallots
+
+  -- create Election 401
+  let id = "401"
+  let date = Date.date 2021 Date.May 11
+  election <- submit microsoft do
+    exerciseByKeyCmd @Issuer (bony, microsoft) CreateElection
+      with
+        id
+        date
+        description = "vote on budget"
+
+  -- create ballot for microsoft shareholders
+  ballots <- submit bony do
+    exerciseCmd election IssueBallots
+
+  submit beta do
+    exerciseByKeyCmd @Ballot (alice, microsoft, date, id) FillBallot
+      with
+        vote = True
+
+  submit beta do
+    exerciseByKeyCmd @Ballot (charlie, microsoft, date, id) FillBallot
+      with
+        vote = True
+
+  submit admin do
+    exerciseByKeyCmd @Election (microsoft, date, id) CollectBallots
+
+  -- create Election 431
+  let id = "431"
+  let date = Date.date 2021 Date.Jul 20
+  election <- submit microsoft do
+    exerciseByKeyCmd @Issuer (bony, microsoft) CreateElection
+      with
+        id
+        date
+        description = "vote on director"
+
+  -- create ballot for microsoft shareholders
+  ballots <- submit bony do
+    exerciseCmd election IssueBallots
+
+  submit beta do
+    exerciseByKeyCmd @Ballot (alice, microsoft, date, id) FillBallot
+      with
+        vote = False
+
+  submit beta do
+    exerciseByKeyCmd @Ballot (charlie, microsoft, date, id) FillBallot
       with
         vote = False
 
   submit admin do
-    exerciseByKeyCmd @Election (apple, date, id) CollectBallots
+    exerciseByKeyCmd @Election (microsoft, date, id) CollectBallots
 
   return ()

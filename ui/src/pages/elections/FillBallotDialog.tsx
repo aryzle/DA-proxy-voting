@@ -50,8 +50,8 @@ export function FillBallotDialog<T extends { [key : string] : any }>(props : Inp
           required
           style={{width: 200}}
         >
-          <MenuItem value={1}>Yes</MenuItem>
-          <MenuItem value={-1}>No</MenuItem>
+          <MenuItem value={1}>For</MenuItem>
+          <MenuItem value={-1}>Against</MenuItem>
         </Select>
       </DialogContent>
       <DialogActions>

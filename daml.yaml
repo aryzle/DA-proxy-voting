@@ -7,15 +7,19 @@ source: daml
 init-script: Main:setup
 parties:
   - Alice
-  - Bob
+  - Fund Manager Bob
   - Charlie
   - Dan
-  - Broadridge
+  - Fund Manager Faith
+  - Putnam
   - Apple
   - Microsoft
+  - Amazon
+  - Google
+  - Facebook
   - DTCC
   - BoNY
-  - Fed
+  - Regulator
   - Public
 version: 0.0.1
 dependencies:
