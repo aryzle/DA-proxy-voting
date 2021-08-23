@@ -56,11 +56,12 @@ export default function Elections() {
   const [fillBallotDialogOpen, setFillBallotDialogOpen] = React.useState(false)
   const fillBallot = (ballotIds: ContractId<Ballot>[]) => async (voteNum: number) => {
     const vote = voteNum > 0 ? true : false
-    ballotIds.forEach(async ballotId => {
+    for (const ballotId of ballotIds) {
       const [choiceReturnValue, events] = await ledger.exercise(Ballot.FillBallot, ballotId, {vote})
       console.log(choiceReturnValue)
       console.log(events)
-    })
+    }
+    closeFillBallotDialog()
   }
   const openFillBallotDialog = () => {
     setFillBallotDialogOpen(true)
