@@ -70,8 +70,10 @@ export default function Elections() {
     setFillBallotDialogOpen(false)
   }
 
+  const [electionResult, setElectionResult] = React.useState<CreateEvent<ElectionResult>>()
   const [electionResultDialogOpen, setElectionResultDialogOpen] = React.useState(false)
-  const openElectionResultDialog = () => {
+  const openElectionResultDialog = (er: CreateEvent<ElectionResult>) => () => {
+    setElectionResult(er)
     setElectionResultDialogOpen(true)
   }
   const closeElectionResultDialog = () => {
@@ -182,7 +184,7 @@ export default function Elections() {
         <TableBody>
           {electionResults.map(er => (
             <>
-              <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog} hover>
+              <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog(er)} hover>
                 <TableCell key={0} className={classes.tableCell}>{er.payload.id}</TableCell>
                 <TableCell key={1} className={classes.tableCell}>{er.payload.date}</TableCell>
                 <TableCell key={2} className={classes.tableCell}>{er.payload.issuer}</TableCell>
@@ -191,15 +193,15 @@ export default function Elections() {
                 <TableCell key={5} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
                 <TableCell key={6} className={classes.tableCell}>{er.payload.absentee}</TableCell>
               </TableRow>
-              <ElectionResultDialog
-                open={electionResultDialogOpen}
-                title={`Election ${er.payload.id} Result`}
-                onClose={closeElectionResultDialog}
-                election={er.payload}
-                filledOutBallot={filledOutBallots.find(b => b.payload.electionId === er.payload.id && b.payload.issuer === er.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))?.payload}
-              />
             </>
           ))}
+          {electionResult && <ElectionResultDialog
+            open={electionResultDialogOpen}
+            title={`Election ${electionResult.payload.id} Result`}
+            onClose={closeElectionResultDialog}
+            election={electionResult.payload}
+            filledOutBallots={filledOutBallots.filter(b => b.payload.electionId === electionResult.payload.id && b.payload.issuer === electionResult.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))}
+          />}
         </TableBody>
       </Table>
     </>

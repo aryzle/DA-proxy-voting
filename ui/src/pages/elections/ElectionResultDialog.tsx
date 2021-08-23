@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { CreateEvent } from "@daml/ledger"
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -14,12 +15,12 @@ export interface InputDialogProps<T extends {[key: string]: any }> {
   open : boolean
   title : string
   election: ElectionResult
-  filledOutBallot: FilledOutBallot | undefined
+  filledOutBallots: CreateEvent<FilledOutBallot>[]
   onClose : () => void
 }
 
 export function ElectionResultDialog<T extends { [key : string] : any }>(props : InputDialogProps<T>) {
-  const [vote, setVote] = useState(0)
+  const [quantity, vote] = props.filledOutBallots.reduce<[number, boolean | undefined]>((acc, ballot, i) => [acc[0]+parseInt(ballot.payload.quantity), ballot.payload.vote], [0, undefined])
 
   return (
     <Dialog open={props.open} onClose={() => props.onClose()} maxWidth="sm" fullWidth>
@@ -29,17 +30,17 @@ export function ElectionResultDialog<T extends { [key : string] : any }>(props :
           Topic: "{props.election.description}"
         </DialogContentText>
         <DialogContentText>
-          { props.filledOutBallot?.quantity ?
+          { quantity ?
             <div style={{display: "flex", alignItems: "center"}}>
-              You voted {props.filledOutBallot?.vote ? "in support of" : "against"} this with {props.filledOutBallot.quantity.toString()} votes
-              {props.filledOutBallot?.vote ? <CheckCircleIcon color="primary" fontSize="large" /> : <CancelIcon color="error" fontSize="large" />}
+              You voted {vote ? "in support of" : "against"} this with {quantity} votes
+              {vote ? <CheckCircleIcon color="primary" fontSize="large" /> : <CancelIcon color="error" fontSize="large" />}
             </div>:
             "You did not vote on this."
           }
         </DialogContentText>
-        {props.filledOutBallot?.proxy &&
+        {!!quantity && props.filledOutBallots[0].payload.proxy &&
           <DialogContentText>
-            Proxy: {props.filledOutBallot.proxy}
+            Proxy: {props.filledOutBallots[0].payload.proxy}
           </DialogContentText>
         }
       </DialogContent>
