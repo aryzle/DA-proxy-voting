@@ -18,12 +18,13 @@ setup = script do
   dan <- allocatePartyWithHint "Dan" (PartyIdHint "Dan")
   beta <- allocatePartyWithHint "Fund Beta" (PartyIdHint "Fund Beta")
   gamma <- allocatePartyWithHint "Fund Gamma" (PartyIdHint "Fund Gamma")
-  admin <- allocatePartyWithHint "Putnam" (PartyIdHint "Putnam")
+  admin <- allocatePartyWithHint "Admin" (PartyIdHint "Admin")
   apple <- allocatePartyWithHint "Apple" (PartyIdHint "Apple")
   microsoft <- allocatePartyWithHint "Microsoft" (PartyIdHint "Microsoft")
   amazon <- allocatePartyWithHint "Amazon" (PartyIdHint "Amazon")
   google <- allocatePartyWithHint "Google" (PartyIdHint "Google")
   facebook <- allocatePartyWithHint "Facebook" (PartyIdHint "Facebook")
+  fidelity <- allocatePartyWithHint "Fidelity" (PartyIdHint "Fidelity")
   dtcc <- allocatePartyWithHint "DTCC" (PartyIdHint "DTCC")
   bony <- allocatePartyWithHint "BoNY" (PartyIdHint "BoNY")
   regulator <- allocatePartyWithHint "Regulator" (PartyIdHint "Regulator")
@@ -32,7 +33,7 @@ setup = script do
   now <- getTime
   let
     investors = [alice, charlie, dan]
-    issuers = [(apple, "AAPL"), (microsoft, "MSFT"), (amazon, "AMZN"), (google, "GOOG"), (facebook, "FB")]
+    issuers = [(apple, "AAPL"), (microsoft, "MSFT"), (amazon, "AMZN"), (google, "GOOG"), (facebook, "FB"), (fidelity, "FFIDX")]
 
   -- create Investors
   mapA_ (\investor -> submit admin do
@@ -89,6 +90,11 @@ setup = script do
     exerciseByKeyCmd @VoterRegistry microsoft AddInvestor
       with
         investor = charlie
+
+  submit fidelity do
+    exerciseByKeyCmd @VoterRegistry fidelity AddInvestor
+      with
+        investor = dan
 
   -- create Proxies
   bobProxy <- submit admin do
@@ -183,6 +189,14 @@ setup = script do
         quantity = 50
         issued = now
         proxy = Some gamma
+
+  danVote2 <- submit fidelity do
+    exerciseByKeyCmd @Issuer (bony, fidelity) IssueVote
+      with
+        investor = dan
+        quantity = 200
+        issued = now
+        proxy = None
 
   -- -- Alice transfers vote to proxy Bob
   -- aliceToBobVoteTransfer <- submit alice do

@@ -81,7 +81,7 @@ export default function Elections() {
   }
 
   const renderInvestorActions = (e: CreateEvent<Election>) => {
-    if (!e.payload.proxies.map.has(party))
+    if (!e.payload.proxies.map.has(party) && !e.payload.investors.map.has(party))
       return
 
     const ballotIds = ballots.filter(b => b.payload.electionId === e.payload.id).map(b => b.contractId)
