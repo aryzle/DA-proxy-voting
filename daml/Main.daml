@@ -220,14 +220,18 @@ setup = script do
   --       transferId = aliceToBobVoteTransfer2
 
   -- create Election 123
-  let id = "123"
-  let date = Date.date 2021 Date.Jul 14
+  let
+    id = "123"
+    date = Date.date 2021 Date.Jul 14
+    document = Document with
+      name = "filename"
+      file = "Proxy Statement"
+
   election <- submit apple do
     exerciseByKeyCmd @Issuer (bony, apple) CreateElection
       with
-        id
-        date
         description = "vote on CEO"
+        ..
 
   -- create ballot for Apple shareholders
   ballots <- submit bony do
@@ -247,14 +251,14 @@ setup = script do
     exerciseByKeyCmd @Election (apple, date, id) CollectBallots
 
   -- create Election 102
-  let id = "102"
-  let date = Date.date 2021 Date.May 17
+  let
+    id = "102"
+    date = Date.date 2021 Date.May 17
   election <- submit apple do
     exerciseByKeyCmd @Issuer (bony, apple) CreateElection
       with
-        id
-        date
         description = "vote on budget"
+        ..
 
   -- create ballot for Apple shareholders
   ballots <- submit bony do
@@ -279,14 +283,14 @@ setup = script do
     exerciseByKeyCmd @Election (apple, date, id) CollectBallots
 
   -- create Election 401
-  let id = "401"
-  let date = Date.date 2021 Date.May 11
+  let
+    id = "401"
+    date = Date.date 2021 Date.May 11
   election <- submit microsoft do
     exerciseByKeyCmd @Issuer (bony, microsoft) CreateElection
       with
-        id
-        date
         description = "vote on budget"
+        ..
 
   -- create ballot for microsoft shareholders
   ballots <- submit bony do
@@ -306,14 +310,14 @@ setup = script do
     exerciseByKeyCmd @Election (microsoft, date, id) CollectBallots
 
   -- create Election 431
-  let id = "431"
-  let date = Date.date 2021 Date.Jul 20
+  let
+    id = "431"
+    date = Date.date 2021 Date.Jul 20
   election <- submit microsoft do
     exerciseByKeyCmd @Issuer (bony, microsoft) CreateElection
       with
-        id
-        date
         description = "vote on director"
+        ..
 
   -- create ballot for microsoft shareholders
   ballots <- submit bony do

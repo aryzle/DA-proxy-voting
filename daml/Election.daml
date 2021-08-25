@@ -10,6 +10,12 @@ import Vote
 -- unused
 -- data ProxyVoter = Investor with voter: Party | Proxy with voter: Party deriving (Eq, Show)
 
+data Document = Document
+  with
+    name: Text
+    file: Text
+  deriving (Eq, Show)
+
 
 template Election
   -- some event in time, voters will cast ballots on, either yes or no
@@ -21,6 +27,7 @@ template Election
     symbol: Text
     id: Text
     description: Text
+    document: Document
     custodian: Party
     csd: Party -- DTCC
     auditor: Party -- the Fed

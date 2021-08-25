@@ -122,6 +122,7 @@ template Issuer
           id: Text
           date: Date
           description: Text
+          document: Document
         do
           (cid, voterRegistry) <- fetchByKey @VoterRegistry issuer
           (cid, proxyRegistry) <- fetchByKey @ProxyRegistry issuer
