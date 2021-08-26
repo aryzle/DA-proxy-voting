@@ -14,8 +14,13 @@ import { Document as ElectionDocument, Election, ElectionResult, Ballot, FilledO
 import { Issuer } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin"
 import { Box, Typography } from "@material-ui/core"
 import { CreateElectionDialog } from "./CreateElectionDialog"
+import { ElectionAnnouncementDialog } from "./ElectionAnnouncementDialog"
+import { ElectionProgressDialog } from "./ElectionProgressDialog"
 import { ElectionResultDialog } from "./ElectionResultDialog"
 import { FillBallotDialog } from "./FillBallotDialog"
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
+import CloudDownloadOutlinedIcon from '@material-ui/icons/CloudDownloadOutlined';
+import HistoryIcon from '@material-ui/icons/History';
 import useStyles from "./styles"
 
 export default function Elections() {
@@ -45,7 +50,16 @@ export default function Elections() {
       const file: string = typeof reader.result === "string" ? reader.result : "";
       ledger.exercise(Issuer.CreateElection, issuerContract.contractId, {id, date, description, document: { name: files[0].name, file}})
       closeCreateElectionDialog()
+      openElectionAnnouncementDialog()
     }
+  }
+
+  const [electionAnnouncementDialogOpen, setElectionAnnouncementDialogOpen] = React.useState(false)
+  const openElectionAnnouncementDialog = () => {
+    setElectionAnnouncementDialogOpen(true)
+  }
+  const closeElectionAnnouncementDialog = () => {
+    setElectionAnnouncementDialogOpen(false)
   }
 
   const issueBallots = (electionId: ContractId<Election>) => async () => {
@@ -70,6 +84,16 @@ export default function Elections() {
   }
   const closeFillBallotDialog = () => {
     setFillBallotDialogOpen(false)
+  }
+
+  const [election, setElection] = React.useState<CreateEvent<Election>>()
+  const [electionProgressDialogOpen, setElectionProgressDialogOpen] = React.useState(false)
+  const openElectionProgressDialog = (e: CreateEvent<Election>) => () => {
+    setElection(e)
+    setElectionProgressDialogOpen(true)
+  }
+  const closeElectionProgressDialog = () => {
+    setElectionProgressDialogOpen(false)
   }
 
   const [electionResult, setElectionResult] = React.useState<CreateEvent<ElectionResult>>()
@@ -116,6 +140,7 @@ export default function Elections() {
     <>
       <Box display="flex">
         <Typography className={classes.header} variant="h2" component="h2">
+          <AssignmentOutlinedIcon />
           Elections
         </Typography>
         {isIssuer &&
@@ -130,6 +155,8 @@ export default function Elections() {
               onClose={closeCreateElectionDialog}
               createElection={createElection}
             />
+            <ElectionAnnouncementDialog title="Election Announcement" open={electionAnnouncementDialogOpen} onClose={closeElectionAnnouncementDialog} />
+            { election && <ElectionProgressDialog title="Election Progress" election={election} open={electionProgressDialogOpen} onClose={closeElectionProgressDialog} />}
           </>
         }
       </Box>
@@ -146,12 +173,16 @@ export default function Elections() {
         </TableHead>
         <TableBody>
           {elections.map(e => (
-            <TableRow key={e.contractId} className={classes.tableRow}>
+            <TableRow key={e.contractId} className={classes.tableRow} onClick={openElectionProgressDialog(e)}>
               <TableCell key={0} className={classes.tableCell}>{e.payload.id}</TableCell>
               <TableCell key={1} className={classes.tableCell}>{e.payload.date}</TableCell>
               <TableCell key={2} className={classes.tableCell}>{e.payload.issuer}</TableCell>
               <TableCell key={3} className={classes.tableCell}>{e.payload.description}</TableCell>
-              <TableCell key={4} className={classes.tableCell} onClick={downloadFile(e.payload.document)}>{e.payload.document.name}</TableCell>
+              <TableCell key={4} className={classes.tableCell}>
+                <Button size="small" onClick={downloadFile(e.payload.document)} endIcon={<CloudDownloadOutlinedIcon />} style={{textTransform: "none"}}>
+                  {e.payload.document.name}
+                </Button>
+              </TableCell>
               <TableCell key={5} className={classes.tableCell}>
                 {party === e.payload.admin &&
                     <Button
@@ -177,6 +208,7 @@ export default function Elections() {
       </Table>
       <Box display="flex" mt={5}>
         <Typography className={classes.header} variant="h2" component="h2">
+          <HistoryIcon />
           Previous Elections
         </Typography>
       </Box>
@@ -206,15 +238,15 @@ export default function Elections() {
               </TableRow>
             </>
           ))}
-          {electionResult && <ElectionResultDialog
-            open={electionResultDialogOpen}
-            title={`Election ${electionResult.payload.id} Result`}
-            onClose={closeElectionResultDialog}
-            election={electionResult.payload}
-            filledOutBallots={filledOutBallots.filter(b => b.payload.electionId === electionResult.payload.id && b.payload.issuer === electionResult.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))}
-          />}
         </TableBody>
       </Table>
+      {electionResult && <ElectionResultDialog
+        open={electionResultDialogOpen}
+        title={`Election ${electionResult.payload.id} Result`}
+        onClose={closeElectionResultDialog}
+        election={electionResult.payload}
+        filledOutBallots={filledOutBallots.filter(b => b.payload.electionId === electionResult.payload.id && b.payload.issuer === electionResult.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))}
+      />}
     </>
   )
 }

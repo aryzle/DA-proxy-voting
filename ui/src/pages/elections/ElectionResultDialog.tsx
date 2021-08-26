@@ -8,6 +8,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from "@material-ui/core/DialogActions";
 import { ElectionResult } from "@daml.js/proxy-voting-0.0.1/lib/Election";
 import { FilledOutBallot } from "@daml.js/proxy-voting-0.0.1/lib/Election";
+import Divider from '@material-ui/core/Divider';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 
@@ -29,6 +30,7 @@ export function ElectionResultDialog<T extends { [key : string] : any }>(props :
         <DialogContentText>
           Topic: "{props.election.description}"
         </DialogContentText>
+        <Divider />
         <DialogContentText>
           { quantity ?
             <div style={{display: "flex", alignItems: "center"}}>
@@ -39,9 +41,12 @@ export function ElectionResultDialog<T extends { [key : string] : any }>(props :
           }
         </DialogContentText>
         {!!quantity && props.filledOutBallots[0].payload.proxy &&
-          <DialogContentText>
-            Proxy: {props.filledOutBallots[0].payload.proxy}
-          </DialogContentText>
+          <>
+            <Divider />
+            <DialogContentText>
+              Proxy: {props.filledOutBallots[0].payload.proxy}
+            </DialogContentText>
+          </>
         }
       </DialogContent>
       <DialogActions>

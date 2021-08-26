@@ -15,6 +15,7 @@ import { Box, Typography } from "@material-ui/core";
 import { SetProxyDialog } from "./SetProxyDialog";
 import { wsBaseUrl, httpBaseUrl } from "config";
 import { useUserState } from "context/UserContext";
+import HowToVoteIcon from '@material-ui/icons/HowToVote';
 
 export default function Votes() {
   const user = useUserState();
@@ -79,6 +80,7 @@ export default function Votes() {
     <>
       <Box mb={5}>
         <Typography variant="h2" component="h2">
+          <HowToVoteIcon />
           Votes
         </Typography>
         <Table size="small">

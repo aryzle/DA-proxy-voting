@@ -1203,9 +1203,9 @@
 "@daml.js/proxy-voting-0.0.1@file:daml.js/proxy-voting-0.0.1":
   version "1.13.1"
   dependencies:
-    "@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7"
-    "@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657"
-    "@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-43db67eb-ed00-421e-8258-90e80ffd392a-1628533625770/node_modules/@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662"
+    "@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-e92f820a-a185-4449-a835-cf007611827f-1630014461220/node_modules/@daml.js/40f452260bef3f29dede136108fc08a88d5a5250310281067087da6f0baddff7"
+    "@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-e92f820a-a185-4449-a835-cf007611827f-1630014461220/node_modules/@daml.js/97b883cd8a2b7f49f90d5d39c981cf6e110cf1f1c64427a28a6d58ec88c43657"
+    "@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662" "file:../../../Library/Caches/Yarn/v6/npm-@daml-js-proxy-voting-0-0-1-1.13.1-e92f820a-a185-4449-a835-cf007611827f-1630014461220/node_modules/@daml.js/d14e08374fc7197d6a0de468c968ae8ba3aadbf9315476fd39071831f5923662"
     "@mojotech/json-type-validation" "^3.1.0"
 
 "@daml/ledger@1.13.1":
@@ -1445,6 +1445,17 @@
   integrity sha512-fQNsKX2TxBmqIGJCSi3tGTO/gZ+eJgWmMJkgDiOfyNaunNaxcklJQFaFogYcFl0qFuaEz1qaXYXboa/bUXVSOQ==
   dependencies:
     "@babel/runtime" "^7.4.4"
+
+"@material-ui/lab@^4.0.0-alpha.60":
+  version "4.0.0-alpha.60"
+  resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-4.0.0-alpha.60.tgz#5ad203aed5a8569b0f1753945a21a05efa2234d2"
+  integrity sha512-fadlYsPJF+0fx2lRuyqAuJj7hAS1tLDdIEEdov5jlrpb5pp4b+mRDUqQTUxi4inRZHS1bEXpU8QWUhO6xX88aA==
+  dependencies:
+    "@babel/runtime" "^7.4.4"
+    "@material-ui/utils" "^4.11.2"
+    clsx "^1.0.4"
+    prop-types "^15.7.2"
+    react-is "^16.8.0 || ^17.0.0"
 
 "@material-ui/styles@^4.11.4", "@material-ui/styles@^4.3.0":
   version "4.11.4"

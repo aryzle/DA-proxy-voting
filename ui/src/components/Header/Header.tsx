@@ -6,6 +6,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import ExitToApp from "@material-ui/icons/ExitToApp";
 import { useUserDispatch, signOut, useUserState } from "../../context/UserContext";
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import useStyles from "./styles";
 
 const Header = ({ history } : RouteComponentProps) => {
@@ -18,10 +19,11 @@ const Header = ({ history } : RouteComponentProps) => {
     <AppBar position="fixed" className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
         <Typography variant="h6" className={classes.logotype}>
-          DAML App Template
+          Proxy Voting
         </Typography>
         <div className={classes.grow} />
-        { userState.isAuthenticated && <Typography variant="h6">User: {userState.party}</Typography> }
+        <AccountCircleIcon />
+        { userState.isAuthenticated && <Typography variant="h6">{userState.party}</Typography> }
         <IconButton
           aria-haspopup="true"
           color="inherit"
