@@ -2,7 +2,8 @@ import { makeStyles, createStyles } from "@material-ui/styles";
 
 export default makeStyles((theme : any) => createStyles({
   header: {
-    flexGrow: 1
+    flexGrow: 1,
+    padding: 6
   },
   tableCell: {
     verticalAlign: "center",

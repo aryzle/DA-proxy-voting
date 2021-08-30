@@ -13,6 +13,7 @@ import { ContractId } from "@daml/types"
 import { Document as ElectionDocument, Election, ElectionResult, Ballot, FilledOutBallot } from "@daml.js/proxy-voting-0.0.1/lib/Election"
 import { Issuer } from "@daml.js/proxy-voting-0.0.1/lib/UserAdmin"
 import { Box, Typography } from "@material-ui/core"
+import Paper from "@material-ui/core/Paper"
 import { CreateElectionDialog } from "./CreateElectionDialog"
 import { ElectionAnnouncementDialog } from "./ElectionAnnouncementDialog"
 import { ElectionProgressDialog } from "./ElectionProgressDialog"
@@ -156,90 +157,103 @@ export default function Elections() {
               createElection={createElection}
             />
             <ElectionAnnouncementDialog title="Election Announcement" open={electionAnnouncementDialogOpen} onClose={closeElectionAnnouncementDialog} />
-            { election && <ElectionProgressDialog title="Election Progress" election={election} open={electionProgressDialogOpen} onClose={closeElectionProgressDialog} />}
+            { election &&
+              <ElectionProgressDialog
+                title="Election Progress"
+                election={election}
+                open={electionProgressDialogOpen}
+                onClose={closeElectionProgressDialog}
+                hasBallots={!!ballots.find(b => b.payload.electionId === election.payload.id)}
+                hasFilledOutBallots={!!filledOutBallots.find(b => b.payload.electionId === election.payload.id)}
+              />
+            }
           </>
         }
       </Box>
-      <Table size="small">
-        <TableHead>
-          <TableRow className={classes.tableRow}>
-            <TableCell key={0} className={classes.tableCell}>ID</TableCell>
-            <TableCell key={1} className={classes.tableCell}>Date</TableCell>
-            <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
-            <TableCell key={3} className={classes.tableCell}>Description</TableCell>
-            <TableCell key={4} className={classes.tableCell}>Documents</TableCell>
-            <TableCell key={5} className={classes.tableCell}>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {elections.map(e => (
-            <TableRow key={e.contractId} className={classes.tableRow} onClick={openElectionProgressDialog(e)}>
-              <TableCell key={0} className={classes.tableCell}>{e.payload.id}</TableCell>
-              <TableCell key={1} className={classes.tableCell}>{e.payload.date}</TableCell>
-              <TableCell key={2} className={classes.tableCell}>{e.payload.issuer}</TableCell>
-              <TableCell key={3} className={classes.tableCell}>{e.payload.description}</TableCell>
-              <TableCell key={4} className={classes.tableCell}>
-                <Button size="small" onClick={downloadFile(e.payload.document)} endIcon={<CloudDownloadOutlinedIcon />} style={{textTransform: "none"}}>
-                  {e.payload.document.name}
-                </Button>
-              </TableCell>
-              <TableCell key={5} className={classes.tableCell}>
-                {party === e.payload.admin &&
-                    <Button
-                      color="primary"
+      <Paper>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow className={classes.tableRow}>
+              <TableCell key={0} className={classes.tableCell}>ID</TableCell>
+              <TableCell key={1} className={classes.tableCell}>Date</TableCell>
+              <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
+              <TableCell key={3} className={classes.tableCell}>Description</TableCell>
+              <TableCell key={4} className={classes.tableCell}>Documents</TableCell>
+              <TableCell key={5} className={classes.tableCell}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {elections.map(e => (
+              <TableRow key={e.contractId} className={classes.tableRow} onClick={openElectionProgressDialog(e)} hover>
+                <TableCell key={0} className={classes.tableCell}>{e.payload.id}</TableCell>
+                <TableCell key={1} className={classes.tableCell}>{e.payload.date}</TableCell>
+                <TableCell key={2} className={classes.tableCell}>{e.payload.issuer}</TableCell>
+                <TableCell key={3} className={classes.tableCell}>{e.payload.description}</TableCell>
+                <TableCell key={4} className={classes.tableCell}>
+                  <Button size="small" onClick={downloadFile(e.payload.document)} endIcon={<CloudDownloadOutlinedIcon />} style={{textTransform: "none"}}>
+                    {e.payload.document.name}
+                  </Button>
+                </TableCell>
+                <TableCell key={5} className={classes.tableCell}>
+                  {party === e.payload.admin &&
+                      <Button
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                        onClick={collectBallots(e.contractId)}>Collect Ballots</Button>
+                  }
+                  {party === e.payload.custodian && !ballots.find(b => b.payload.electionId === e.payload.id) &&
+                    <Button color="primary"
                       variant="outlined"
                       size="small"
-                      onClick={collectBallots(e.contractId)}>Collect Ballots</Button>
+                      onClick={issueBallots(e.contractId)}
+                    >
+                      Issue Ballots
+                    </Button>
                 }
-                {party === e.payload.custodian && !ballots.find(b => b.payload.electionId === e.payload.id) &&
-                  <Button color="primary"
-                    variant="outlined"
-                    size="small"
-                    onClick={issueBallots(e.contractId)}
-                  >
-                    Issue Ballots
-                  </Button>
-              }
-              {renderInvestorActions(e)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                {renderInvestorActions(e)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
       <Box display="flex" mt={5}>
         <Typography className={classes.header} variant="h2" component="h2">
           <HistoryIcon />
           Previous Elections
         </Typography>
       </Box>
-      <Table size="small">
-        <TableHead>
-          <TableRow className={classes.tableRow}>
-            <TableCell key={0} className={classes.tableCell}>ID</TableCell>
-            <TableCell key={1} className={classes.tableCell}>Date</TableCell>
-            <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
-            <TableCell key={3} className={classes.tableCell}>Description</TableCell>
-            <TableCell key={4} className={classes.tableCell}>Votes For</TableCell>
-            <TableCell key={5} className={classes.tableCell}>Votes Against</TableCell>
-            <TableCell key={6} className={classes.tableCell}>Absent</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {electionResults.map(er => (
-            <>
-              <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog(er)} hover>
-                <TableCell key={0} className={classes.tableCell}>{er.payload.id}</TableCell>
-                <TableCell key={1} className={classes.tableCell}>{er.payload.date}</TableCell>
-                <TableCell key={2} className={classes.tableCell}>{er.payload.issuer}</TableCell>
-                <TableCell key={3} className={classes.tableCell}>{er.payload.description}</TableCell>
-                <TableCell key={4} className={classes.tableCell}>{er.payload.votesFor}</TableCell>
-                <TableCell key={5} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
-                <TableCell key={6} className={classes.tableCell}>{er.payload.absentee}</TableCell>
-              </TableRow>
-            </>
-          ))}
-        </TableBody>
-      </Table>
+      <Paper>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow className={classes.tableRow}>
+              <TableCell key={0} className={classes.tableCell}>ID</TableCell>
+              <TableCell key={1} className={classes.tableCell}>Date</TableCell>
+              <TableCell key={2} className={classes.tableCell}>Issuer</TableCell>
+              <TableCell key={3} className={classes.tableCell}>Description</TableCell>
+              <TableCell key={4} className={classes.tableCell}>Votes For</TableCell>
+              <TableCell key={5} className={classes.tableCell}>Votes Against</TableCell>
+              <TableCell key={6} className={classes.tableCell}>Absent</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {electionResults.map(er => (
+              <>
+                <TableRow key={er.contractId} className={classes.tableRow} onClick={openElectionResultDialog(er)} hover>
+                  <TableCell key={0} className={classes.tableCell}>{er.payload.id}</TableCell>
+                  <TableCell key={1} className={classes.tableCell}>{er.payload.date}</TableCell>
+                  <TableCell key={2} className={classes.tableCell}>{er.payload.issuer}</TableCell>
+                  <TableCell key={3} className={classes.tableCell}>{er.payload.description}</TableCell>
+                  <TableCell key={4} className={classes.tableCell}>{er.payload.votesFor}</TableCell>
+                  <TableCell key={5} className={classes.tableCell}>{er.payload.votesAgainst}</TableCell>
+                  <TableCell key={6} className={classes.tableCell}>{er.payload.absentee}</TableCell>
+                </TableRow>
+              </>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
       {electionResult && <ElectionResultDialog
         open={electionResultDialogOpen}
         title={`Election ${electionResult.payload.id} Result`}
