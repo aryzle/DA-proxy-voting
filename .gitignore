@@ -3,3 +3,6 @@ sandbox.log
 navigator.log
 node_modules
 daml.js
+.DS_Store
+**/build
+build.zip
