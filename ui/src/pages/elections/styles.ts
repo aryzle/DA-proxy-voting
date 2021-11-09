@@ -21,7 +21,8 @@ export default makeStyles((theme : any) => createStyles({
     height: "auto"
   },
   textField: {
-    fontSize: "0.75rem"
+    fontSize: "0.75rem",
+    width: "51%",
   },
   textFieldUnderline: {
     "&:before": {
@@ -38,4 +39,7 @@ export default makeStyles((theme : any) => createStyles({
     paddingTop: 0,
     paddingBottom: 0,
   },
+  marginTop: {
+    marginTop: 16,
+  }
 }));

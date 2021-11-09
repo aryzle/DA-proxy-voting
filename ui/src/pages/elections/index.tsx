@@ -256,7 +256,7 @@ export default function Elections() {
       </Paper>
       {electionResult && <ElectionResultDialog
         open={electionResultDialogOpen}
-        title={`Election ${electionResult.payload.id} Result`}
+        title={`Topic: ${electionResult.payload.description}`}
         onClose={closeElectionResultDialog}
         election={electionResult.payload}
         filledOutBallots={filledOutBallots.filter(b => b.payload.electionId === electionResult.payload.id && b.payload.issuer === electionResult.payload.issuer && (b.payload.investor === party || !!b.payload.proxy))}

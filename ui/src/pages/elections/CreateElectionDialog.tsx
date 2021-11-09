@@ -8,6 +8,7 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import { Box, Typography } from "@material-ui/core";
 import { DropzoneArea } from 'material-ui-dropzone'
+import useStyles from "./styles"
 
 export interface RegularField {
   label : string
@@ -30,6 +31,7 @@ export interface InputDialogProps<T extends {[key: string]: any }> {
 }
 
 export function CreateElectionDialog<T extends { [key : string] : any }>(props : InputDialogProps<T>) {
+  const classes = useStyles()
   const [id, setId] = useState("")
   const [date, setDate] = useState("")
   const [desc, setDesc] = useState("")
@@ -43,6 +45,7 @@ export function CreateElectionDialog<T extends { [key : string] : any }>(props :
           Create an election by setting its date and describing what is being voted on.
         </DialogContentText>
         <TextField
+          className={classes.textField}
           autoFocus
           margin="dense"
           id="id"
@@ -54,27 +57,29 @@ export function CreateElectionDialog<T extends { [key : string] : any }>(props :
           required
         />
         <TextField
-            margin="dense"
-            id="description"
-            label="description"
-            type="text"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            margin="normal"
-            id="date"
-            label="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            required
-          />
+          className={classes.textField}
+          margin="dense"
+          id="description"
+          label="description"
+          type="text"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          fullWidth
+          required
+        />
+        <TextField
+          className={classes.textField}
+          margin="normal"
+          id="date"
+          label="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          required
+        />
           <Box mt={5}>
             <Typography gutterBottom>
               Upload proxy materials (e.g. proxy statement, annual report)

@@ -103,7 +103,7 @@ export default function Votes() {
                     <TableCell key={1} className={classes.tableCell}>{v.payload.proxy || "None"}</TableCell>
                     <TableCell key={2} className={classes.tableCell}>{v.payload.issuer}</TableCell>
                     <TableCell key={3} className={classes.tableCell}>{v.payload.symbol}</TableCell>
-                    <TableCell key={4} className={classes.tableCell}>{v.payload.quantity}</TableCell>
+                    <TableCell key={4} className={classes.tableCell} align="right">{v.payload.quantity}</TableCell>
                     {/* {party === v.payload.investor &&
                       <TableCell key={5} className={classes.tableCell}>
                         <Button onClick={openSetProxyDialog(v)} color="primary" variant="outlined" size="small">Set Proxy</Button>
